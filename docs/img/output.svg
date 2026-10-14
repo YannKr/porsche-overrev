@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="407" viewBox="0 0 780 407" role="img">
+<title>overrev output: three ticked steps, the DME, and the six over-rev ranges with ignitions and operating hours</title>
+<style>text{font:14px ui-monospace,SFMono-Regular,Menlo,Consolas,"DejaVu Sans Mono",monospace;fill:#e6edf3;white-space:pre}.ok{fill:#3fb950}.bold{font-weight:700}.muted{fill:#8b949e}.prompt{fill:#8b949e}</style>
+<rect width="780" height="407" rx="12" fill="#161b22"/>
+<circle cx="22" cy="20" r="6" fill="#ff5f57"/><circle cx="42" cy="20" r="6" fill="#febc2e"/><circle cx="62" cy="20" r="6" fill="#28c840"/>
+<text x="20" y="64" xml:space="preserve" class="prompt">$ overrev</text>
+<text x="20" y="85" xml:space="preserve" class="ok">✓ Connected to the adapter</text>
+<text x="20" y="106" xml:space="preserve" class="ok">✓ The car answers</text>
+<text x="20" y="127" xml:space="preserve" class="ok">✓ Read the over-rev counters</text>
+<text x="20" y="148" xml:space="preserve" class="bold">DME 991.618.692.17, software 3671 (tested)</text>
+<text x="20" y="190" xml:space="preserve" class="bold">Range  Ignitions  Op. h at last event</text>
+<text x="20" y="211" xml:space="preserve">    1       3382                515.8</text>
+<text x="20" y="232" xml:space="preserve">    2       1135                498.8</text>
+<text x="20" y="253" xml:space="preserve">    3        664                454.2</text>
+<text x="20" y="274" xml:space="preserve">    4        272                454.2</text>
+<text x="20" y="295" xml:space="preserve">    5        166                454.2</text>
+<text x="20" y="316" xml:space="preserve">    6        104                105.2</text>
+<text x="20" y="337" xml:space="preserve" class="muted">Op. h at last event: the engine's operating hours when that range was last reached.</text>
+<text x="20" y="379" xml:space="preserve">Peak engine speed: 11000 rpm. Time above the over-speed limit: 4.6 s.</text>
+</svg>

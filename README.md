@@ -1,57 +1,18 @@
-# overrev: read-only over-rev counters for the Porsche 991.2 GT3 DME
+# <img src="docs/img/gauge.svg" width="32" height="32" alt=""> overrev
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh
-```
+**See how many ignitions a Porsche 991.2 GT3 engine fired above the rev limit, and when. Read-only.**
 
-One line on a Raspberry Pi or another Linux machine with Bluetooth: plug the
-OBDLink MX+ into the car, turn the ignition on (engine off), and run it. It
-installs `overrev` into `~/.local/share/overrev` (its own Python venv,
-nothing system-wide), pairs the adapter the first time (press the MX+
-**Connect** button when asked), and prints the over-rev counters, the peak
-record and the stored fault codes. After that, just run `overrev`. Run the
-line again to update. You can read [get.sh](get.sh) first. macOS, Windows and
-phones: see [Platforms](#platforms).
+[![tests](https://github.com/YannKr/porsche-overrev/actions/workflows/tests.yml/badge.svg)](https://github.com/YannKr/porsche-overrev/actions/workflows/tests.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![tested on: US 991.2 GT3](https://img.shields.io/badge/tested%20on-US%20991.2%20GT3-c0141f)](#hardware)
+[![DME access: read-only](https://img.shields.io/badge/DME%20access-read--only-2ea44f)](#read-only-by-design)
 
-No install, in the browser: https://yannkr.github.io/porsche-overrev/ (Chrome or Edge on a computer).
+The engine computer (DME) counts every ignition above the rev limit, in six
+ranges. overrev reads those counters through an OBDLink adapter, with the
+engine hours when each range was last reached, the highest rpm on record and
+the stored fault codes.
 
-Or run it once with [uv](https://docs.astral.sh/uv/), without installing it:
-
-```bash
-uvx --from https://github.com/YannKr/porsche-overrev/archive/main.tar.gz overrev
-uvx --from https://github.com/YannKr/porsche-overrev/archive/main.tar.gz overrev read --json
-uvx --from https://github.com/YannKr/porsche-overrev/archive/main.tar.gz overrev read --elm PORT
-```
-
-Put any arguments after `overrev`, as in the second and third lines. uv keeps
-the download in its cache. To fetch the newest version, add `--refresh` right
-after `uvx`:
-
-```bash
-uvx --refresh --from https://github.com/YannKr/porsche-overrev/archive/main.tar.gz overrev
-```
-
-`uvx` skips the installer's checks (BlueZ, a powered Bluetooth adapter, a
-Python with Bluetooth sockets). If the connection fails, use the installer, or
-give the adapter's serial port, as in the third line (`PORT` is for example
-`/dev/rfcomm0`).
-
-Before it installs anything, the installer checks that it is not running as
-root, that Python is 3.10 or newer with venv support, and (on Linux) that
-BlueZ is installed and a Bluetooth adapter is present and on. Each install
-goes into a fresh environment that must start before it replaces the old one,
-so a failed update keeps the previous install working. It asks before it
-contacts the car, and logs to `~/.local/share/overrev/install.log`.
-Options go after `sh -s --`:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh -s -- --no-run     # install or update only
-curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh -s -- --yes        # read without asking
-curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh -s -- --uninstall
-```
-
-`OVERREV_REF=<tag or commit>` (set for `sh`) installs that version instead of
-`main`.
+<p align="center"><img src="docs/img/output.svg" width="720" alt="overrev output: three ticked steps, the DME, then the six over-rev ranges with ignitions and operating hours"></p>
 
 > **Tested on one car only: a 2018 Porsche 991.2 GT3, US market**
 > (PIWIS vehicle `GT3_991II_USA`, DME part number 991.618.692.17, DME
@@ -60,6 +21,51 @@ curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh 
 > found is the tested one. In automatic mode, the tool also flags any other
 > VIN (**OTHER CAR**) and any untested DME (**UNTESTED DME**). Use it at your
 > own risk.
+
+## Pick a way
+
+macOS, Windows and SocketCAN interfaces: see [Platforms](#platforms).
+
+### <img src="docs/img/phone.svg" width="22" height="22" alt=""> On your phone, no code
+
+![read tested on an iPhone](https://img.shields.io/badge/-read%20tested%20on%20an%20iPhone-2ea44f)
+
+1. On the phone, download [overrev-pids.udpid](https://yannkr.github.io/porsche-overrev/overrev-pids.udpid).
+2. In the OBDLink app: **Settings › User-Defined PIDs › ⋮ › Import**. This replaces PIDs you added yourself.
+3. Connect to the car and open **PID Values**.
+
+[More](#phone-no-code-obdlink-app)
+
+### <img src="docs/img/browser.svg" width="22" height="22" alt=""> In the browser, nothing to install
+
+![not yet tried with the car](https://img.shields.io/badge/-not%20yet%20tried%20with%20the%20car-d97706)
+
+Open **[yannkr.github.io/porsche-overrev](https://yannkr.github.io/porsche-overrev/)** in Chrome or Edge on a computer and click **Connect**.
+[More](#browser-page-desktop-chrome-or-edge)
+
+### <img src="docs/img/terminal.svg" width="22" height="22" alt=""> In a terminal, on a Raspberry Pi or Linux
+
+![not yet tried with the car](https://img.shields.io/badge/-not%20yet%20tried%20with%20the%20car-d97706)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh
+```
+
+Installs `overrev` in your home directory, pairs the OBDLink and reads the car.
+After that, just run `overrev`. [More](#install)
+
+### <img src="docs/img/auto.svg" width="22" height="22" alt=""> Every time the Pi starts
+
+![not yet tried with the car](https://img.shields.io/badge/-not%20yet%20tried%20with%20the%20car-d97706)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh -s -- --auto
+```
+
+A Raspberry Pi in the car reads once per boot and posts the result to Discord
+or ntfy. [More](#automatic-mode-linux)
+
+## What it reads
 
 The DME counts every ignition at an engine speed above the rev limit, in six
 over-rev ranges. PIWIS shows these as `EngPrt_nrIgnNMax1..6` (number of
@@ -72,8 +78,6 @@ OBDLink phone app.
 
 On the test car, the live read matched a PIWIS screen of the same day on all
 twelve values.
-
-## What it reads
 
 | Range | Ignitions (DID) | Op. time at last over-rev (DID) |
 |---|---|---|
@@ -160,6 +164,59 @@ reads all twelve as plain mode-22 PIDs.
 | Windows | Not the one-liner (it is a shell script) and not the automatic pairing (it uses BlueZ). In principle: pair the MX+ in Windows Bluetooth settings (Windows creates an outgoing COM port), install with `pip install https://github.com/YannKr/porsche-overrev/archive/refs/heads/main.tar.gz`, then run `overrev read --elm COM5` (your COM port). | Not supported, not tested. |
 | Desktop Chrome or Edge 117 or newer (Windows, macOS, Linux, ChromeOS) | The [browser page](#browser-page-desktop-chrome-or-edge): no install; Web Serial reaches a paired Bluetooth OBDLink or a USB one | Not yet tested with an adapter. Safari, Firefox and phone browsers cannot use it. |
 | iPhone, Android | No code: the OBDLink app with the PID file, see [Phone](#phone-no-code-obdlink-app). | Tested on iPhone; Android not tested. |
+
+## Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh
+```
+
+One line on a Raspberry Pi or another Linux machine with Bluetooth: plug the
+OBDLink MX+ into the car, turn the ignition on (engine off), and run it. It
+installs `overrev` into `~/.local/share/overrev` (its own Python venv,
+nothing system-wide), pairs the adapter the first time (press the MX+
+**Connect** button when asked), and prints the over-rev counters, the peak
+record and the stored fault codes. After that, just run `overrev`. Run the
+line again to update. You can read [get.sh](get.sh) first. macOS, Windows and
+phones: see [Platforms](#platforms).
+
+Before it installs anything, the installer checks that it is not running as
+root, that Python is 3.10 or newer with venv support, and (on Linux) that
+BlueZ is installed and a Bluetooth adapter is present and on. Each install
+goes into a fresh environment that must start before it replaces the old one,
+so a failed update keeps the previous install working. It asks before it
+contacts the car, and logs to `~/.local/share/overrev/install.log`.
+Options go after `sh -s --`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh -s -- --no-run     # install or update only
+curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh -s -- --yes        # read without asking
+curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh -s -- --uninstall
+```
+
+`OVERREV_REF=<tag or commit>` (set for `sh`) installs that version instead of
+`main`.
+
+Or run it once with [uv](https://docs.astral.sh/uv/), without installing it:
+
+```bash
+uvx --from https://github.com/YannKr/porsche-overrev/archive/main.tar.gz overrev
+uvx --from https://github.com/YannKr/porsche-overrev/archive/main.tar.gz overrev read --json
+uvx --from https://github.com/YannKr/porsche-overrev/archive/main.tar.gz overrev read --elm PORT
+```
+
+Put any arguments after `overrev`, as in the second and third lines. uv keeps
+the download in its cache. To fetch the newest version, add `--refresh` right
+after `uvx`:
+
+```bash
+uvx --refresh --from https://github.com/YannKr/porsche-overrev/archive/main.tar.gz overrev
+```
+
+`uvx` skips the installer's checks (BlueZ, a powered Bluetooth adapter, a
+Python with Bluetooth sockets). If the connection fails, use the installer, or
+give the adapter's serial port, as in the third line (`PORT` is for example
+`/dev/rfcomm0`).
 
 ## Using it
 
