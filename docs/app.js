@@ -4,8 +4,6 @@ import { ADAPTER, ISSUE_LINK, TABLE_EXPLANATION, TEXT, describeStatus, readCar, 
 
 // Bluetooth Serial Port Profile: lets the port picker list a paired Bluetooth OBDLink.
 const SERIAL_PORT_PROFILE = "00001101-0000-1000-8000-00805f9b34fb";
-const REPO_LINK = "https://github.com/YannKr/porsche-overrev";
-const PHONE_LINK = `${REPO_LINK}#phone-no-code-obdlink-app`;
 // The next step when the chosen port cannot be opened, before anything reached the adapter.
 const HINT_PORT = "Check that the adapter is plugged in with the ignition on, and that no phone or other program is "
   + "connected to it, then try again.";
@@ -134,17 +132,32 @@ function pageView(doc) {
       results.hidden = false;
     },
     noSerial() {
-      byId("connect").hidden = true;
-      byId("picker-note").hidden = true;
-      byId("message").replaceChildren(
-        "This browser cannot talk to the adapter. Use Chrome or Edge on a computer (Mac, Windows, Linux or ChromeOS). "
-        + "On Linux, the ", link(REPO_LINK, "one-line install"), " also works. On a phone, use the OBDLink app: ",
-        link(PHONE_LINK, "how to set it up"), ".");
+      byId("read").hidden = true;
+      byId("browser-go").replaceWith(make("p", "This browser cannot reach the adapter. Open this page in Chrome or Edge "
+        + "on a computer, or use the phone app.", "warning"));
     },
   };
 }
 
+export function copyButtons(doc, nav) {
+  // Each copy button copies the command just before it. Without clipboard access, it selects the command instead.
+  for (const button of doc.querySelectorAll("button.copy")) {
+    const code = button.previousElementSibling;
+    const label = button.querySelector("span");
+    button.addEventListener("click", async () => {
+      try {
+        await nav.clipboard.writeText(code.textContent);
+        label.textContent = "Copied";
+      } catch {
+        doc.getSelection()?.selectAllChildren(code);
+        label.textContent = "Selected: copy it";
+      }
+    });
+  }
+}
+
 function start(doc, nav) {
+  copyButtons(doc, nav);
   const view = pageView(doc);
   if (!("serial" in nav)) {
     view.noSerial();

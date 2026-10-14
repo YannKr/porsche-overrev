@@ -1,0 +1,367 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc culture="" version="1.01">
+  <pid type="4">
+    <Name>Over-rev 1 ignitions</Name>
+    <Description>EngPrt_nrIgnNMax1: ignitions in over-rev range 1</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName />
+      <EnglishName />
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>65535</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1B68</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">A*256+B</Equation>
+    </Formula>
+    <UniqueId>jjUUSk</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>0</NumberOfDecimalPlaces>
+  </pid>
+  <pid type="4">
+    <Name>Over-rev 2 ignitions</Name>
+    <Description>EngPrt_nrIgnNMax2: ignitions in over-rev range 2</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName />
+      <EnglishName />
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>65535</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1B69</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">A*256+B</Equation>
+    </Formula>
+    <UniqueId>WkvVct</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>0</NumberOfDecimalPlaces>
+  </pid>
+  <pid type="4">
+    <Name>Over-rev 3 ignitions</Name>
+    <Description>EngPrt_nrIgnNMax3: ignitions in over-rev range 3</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName />
+      <EnglishName />
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>65535</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1B6A</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">A*256+B</Equation>
+    </Formula>
+    <UniqueId>jplyCA</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>0</NumberOfDecimalPlaces>
+  </pid>
+  <pid type="4">
+    <Name>Over-rev 4 ignitions</Name>
+    <Description>EngPrt_nrIgnNMax4: ignitions in over-rev range 4</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName />
+      <EnglishName />
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>65535</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1BBB</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">A*256+B</Equation>
+    </Formula>
+    <UniqueId>GJoGCt</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>0</NumberOfDecimalPlaces>
+  </pid>
+  <pid type="4">
+    <Name>Over-rev 5 ignitions</Name>
+    <Description>EngPrt_nrIgnNMax5: ignitions in over-rev range 5</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName />
+      <EnglishName />
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>65535</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1BBC</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">A*256+B</Equation>
+    </Formula>
+    <UniqueId>KwLgHo</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>0</NumberOfDecimalPlaces>
+  </pid>
+  <pid type="4">
+    <Name>Over-rev 6 ignitions</Name>
+    <Description>EngPrt_nrIgnNMax6: ignitions in over-rev range 6</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName />
+      <EnglishName />
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>65535</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1BBD</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">A*256+B</Equation>
+    </Formula>
+    <UniqueId>nvqwkZ</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>0</NumberOfDecimalPlaces>
+  </pid>
+  <pid type="4">
+    <Name>Over-rev 1 last event (op h)</Name>
+    <Description>EngPrt_tiNMax1: engine operating hours at the last over-rev in range 1</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName>h</MetricName>
+      <EnglishName>h</EnglishName>
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>7000</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1741</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">(A*256+B)/10</Equation>
+    </Formula>
+    <UniqueId>eueQev</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>1</NumberOfDecimalPlaces>
+  </pid>
+  <pid type="4">
+    <Name>Over-rev 2 last event (op h)</Name>
+    <Description>EngPrt_tiNMax2: engine operating hours at the last over-rev in range 2</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName>h</MetricName>
+      <EnglishName>h</EnglishName>
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>7000</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1743</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">(A*256+B)/10</Equation>
+    </Formula>
+    <UniqueId>iTeaYw</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>1</NumberOfDecimalPlaces>
+  </pid>
+  <pid type="4">
+    <Name>Over-rev 3 last event (op h)</Name>
+    <Description>EngPrt_tiNMax3: engine operating hours at the last over-rev in range 3</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName>h</MetricName>
+      <EnglishName>h</EnglishName>
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>7000</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1745</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">(A*256+B)/10</Equation>
+    </Formula>
+    <UniqueId>kNtyeR</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>1</NumberOfDecimalPlaces>
+  </pid>
+  <pid type="4">
+    <Name>Over-rev 4 last event (op h)</Name>
+    <Description>EngPrt_tiNMax4: engine operating hours at the last over-rev in range 4</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName>h</MetricName>
+      <EnglishName>h</EnglishName>
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>7000</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1BB8</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">(A*256+B)/10</Equation>
+    </Formula>
+    <UniqueId>JVMiyI</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>1</NumberOfDecimalPlaces>
+  </pid>
+  <pid type="4">
+    <Name>Over-rev 5 last event (op h)</Name>
+    <Description>EngPrt_tiNMax5: engine operating hours at the last over-rev in range 5</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName>h</MetricName>
+      <EnglishName>h</EnglishName>
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>7000</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1BB9</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">(A*256+B)/10</Equation>
+    </Formula>
+    <UniqueId>kPiLLU</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>1</NumberOfDecimalPlaces>
+  </pid>
+  <pid type="4">
+    <Name>Over-rev 6 last event (op h)</Name>
+    <Description>EngPrt_tiNMax6: engine operating hours at the last over-rev in range 6</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName>h</MetricName>
+      <EnglishName>h</EnglishName>
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>7000</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1BBA</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">(A*256+B)/10</Equation>
+    </Formula>
+    <UniqueId>CXmeeQ</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>1</NumberOfDecimalPlaces>
+  </pid>
+  <pid type="4">
+    <Name>Peak engine speed</Name>
+    <Description>EngPrt_nMaxSpd: highest engine speed ever recorded</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName>rpm</MetricName>
+      <EnglishName>rpm</EnglishName>
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>16000</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1B8A</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">(A*256+B)/2</Equation>
+    </Formula>
+    <UniqueId>ZeXRVc</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>0</NumberOfDecimalPlaces>
+  </pid>
+  <pid type="4">
+    <Name>Time above over-speed limit</Name>
+    <Description>EngPrt_tiOverSpd: total time above the over-speed limit</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName>s</MetricName>
+      <EnglishName>s</EnglishName>
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>13108</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1B8B</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">(A*256+B)/5</Equation>
+    </Formula>
+    <UniqueId>mFEgRh</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>1</NumberOfDecimalPlaces>
+  </pid>
+</doc>

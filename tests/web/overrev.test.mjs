@@ -17,7 +17,7 @@ import {
   TimeoutError, TransportError, UNTESTED_NOTE, Uds, checkReadOnly, describeStatus, formatPartNumber, Identity,
   parseFaultCodes, readCar, textField, untestedNote,
 } from "../../docs/overrev.js";
-import { connect } from "../../docs/app.js";
+import { connect, copyButtons } from "../../docs/app.js";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const enc = text => new TextEncoder().encode(text);
@@ -652,4 +652,44 @@ test("the page sets car data as text, never as HTML, and loads nothing from anot
   const loaded = [...html.matchAll(/<(?:script|link|img|iframe)\b[^>]*?\b(?:src|href)="([^"]*)"/g)].map(m => m[1]);
   assert.deepEqual(loaded, ["app.js"]);
   assert.doesNotMatch(html, /@import|url\(/);
+});
+
+test("the landing page offers the PID file for download, a byte copy of the one in deploy/obdlink", () => {
+  const html = readFileSync(`${ROOT}docs/index.html`, "utf8");
+  assert.match(html, /<a [^>]*href="overrev-pids\.udpid" download[ >]/);
+  assert.equal(readFileSync(`${ROOT}docs/overrev-pids.udpid`, "utf8"),
+    readFileSync(`${ROOT}deploy/obdlink/overrev-pids.udpid`, "utf8"));
+});
+
+test("the landing page's install lines are the one-liner get.sh documents, plain and with --auto", () => {
+  const html = readFileSync(`${ROOT}docs/index.html`, "utf8");
+  const oneLine = readFileSync(`${ROOT}get.sh`, "utf8").match(/^#\s+(curl -fsSL \S+ \| sh)$/m)[1];
+  const commands = [...html.matchAll(/<code class="cmd">([^<]*)<\/code>/g)].map(m => m[1]);
+  assert.deepEqual(commands, [oneLine, `${oneLine} -s -- --auto`]);
+});
+
+function copyPage(clipboard) {
+  const label = { textContent: "Copy" };
+  const code = { textContent: "curl x | sh" };
+  const selected = [];
+  let onClick;
+  const button = { previousElementSibling: code, querySelector: () => label, addEventListener: (type, fn) => { onClick = fn; } };
+  const doc = { querySelectorAll: () => [button], getSelection: () => ({ selectAllChildren: node => selected.push(node) }) };
+  copyButtons(doc, clipboard ? { clipboard } : {});
+  return { click: () => onClick(), label, code, selected };
+}
+
+test("a copy button puts its command on the clipboard and says so", async () => {
+  const copied = [];
+  const page = copyPage({ writeText: async text => { copied.push(text); } });
+  await page.click();
+  assert.deepEqual(copied, ["curl x | sh"]);
+  assert.equal(page.label.textContent, "Copied");
+});
+
+test("without clipboard access, a copy button selects the command for the user to copy", async () => {
+  const page = copyPage(null);
+  await page.click();
+  assert.deepEqual(page.selected, [page.code]);
+  assert.equal(page.label.textContent, "Selected: copy it");
 });

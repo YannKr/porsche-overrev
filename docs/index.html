@@ -4,67 +4,171 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Read the over-rev counters of a Porsche 991.2 GT3 engine computer with an OBDLink adapter. Read-only.">
 <title>overrev: DME over-rev reader</title>
 <style>
-:root { color-scheme: light dark; --bg: #fff; --fg: #1c1c1e; --muted: #5f5f66; --line: #d4d4d8;
-  --accent: #1d4ed8; --ok: #15803d; --fail: #b91c1c; --warn-bg: #fef3c7; --warn-line: #d97706; }
+:root { color-scheme: light dark; --bg: #f6f6f7; --card: #fff; --fg: #1c1c1e; --muted: #5f5f66; --line: #dcdce0;
+  --accent: #c0141f; --on-accent: #fff; --ok: #15803d; --ok-bg: #dcfce7; --new: #92400e; --new-bg: #fef3c7;
+  --fail: #b91c1c; --warn-bg: #fef3c7; --warn-line: #d97706; --code-bg: #eeeef1; }
 @media (prefers-color-scheme: dark) {
-  :root { --bg: #131316; --fg: #ececf0; --muted: #a1a1aa; --line: #3a3a42;
-    --accent: #93b4ff; --ok: #4ade80; --fail: #f87171; --warn-bg: #3a2a0a; --warn-line: #f59e0b; }
+  :root { --bg: #111113; --card: #1c1c20; --fg: #ececf0; --muted: #a1a1aa; --line: #34343c;
+    --accent: #ff5a5f; --on-accent: #111113; --ok: #4ade80; --ok-bg: #12301d; --new: #fbbf24; --new-bg: #3a2a0a;
+    --fail: #f87171; --warn-bg: #3a2a0a; --warn-line: #f59e0b; --code-bg: #26262c; }
 }
+* { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
-main { max-width: 40rem; margin: 0 auto; padding: 24px 16px 48px; }
-h1 { font-size: 1.6rem; margin: 0 0 8px; }
-h2 { font-size: 1.1rem; margin: 28px 0 8px; }
+main { max-width: 52rem; margin: 0 auto; padding: 32px 16px 48px; }
+h1 { font-size: 1.9rem; line-height: 1.2; margin: 0; }
+h2 { font-size: 1.2rem; margin: 40px 0 12px; }
+h3 { font-size: 1.1rem; margin: 0; }
 p, li { margin: 4px 0; overflow-wrap: anywhere; }
-ul { padding-left: 20px; }
 a { color: var(--accent); }
-button { font: inherit; font-weight: 600; margin: 16px 0 4px; padding: 10px 24px; border: 0; border-radius: 8px;
-  background: var(--accent); color: var(--bg); cursor: pointer; }
+code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.icon { width: 1.25em; height: 1.25em; flex: none; fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.25em; }
+.hero { display: flex; gap: 16px; align-items: center; }
+.hero > .icon { width: 56px; height: 56px; color: var(--accent); }
+.lead { font-size: 1.1rem; margin: 16px 0 0; }
+.need { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; }
+.need li { display: flex; gap: 8px; align-items: center; margin: 0; padding: 6px 12px; border-radius: 999px;
+  background: var(--card); border: 1px solid var(--line); }
+.need .icon { color: var(--accent); }
+.ways { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
+.card { display: flex; flex-direction: column; gap: 10px; padding: 20px; border-radius: 14px;
+  background: var(--card); border: 1px solid var(--line); }
+.card > .icon { width: 40px; height: 40px; color: var(--accent); }
+.ways.stack { grid-template-columns: 1fr; }
+.card.small { flex-direction: row; align-items: flex-start; gap: 16px; }
+.card.small > .icon { width: 32px; height: 32px; }
+.card.small > div { display: flex; flex-direction: column; gap: 8px; min-width: 0; flex: 1; }
+@media (max-width: 480px) { .card.small { flex-direction: column; } }
+.sub { color: var(--muted); margin: 0; }
+.card ol { margin: 0; padding-left: 22px; }
+.card ol li { margin: 6px 0; }
+.pill { align-self: flex-start; font-size: 0.8rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; }
+.pill.tested { color: var(--ok); background: var(--ok-bg); }
+.pill.new { color: var(--new); background: var(--new-bg); }
+.button, button { font: inherit; font-weight: 600; display: inline-flex; gap: 8px; align-items: center; justify-content: center;
+  padding: 10px 20px; border: 0; border-radius: 10px; background: var(--accent); color: var(--on-accent);
+  cursor: pointer; text-decoration: none; align-self: flex-start; }
 button:disabled { opacity: 0.5; cursor: wait; }
+.cmd-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+.cmd { flex: 1 1 18rem; min-width: 0; padding: 8px 10px; border-radius: 8px; background: var(--code-bg); font-size: 0.85rem;
+  overflow-wrap: anywhere; user-select: all; }
+button.copy { padding: 6px 12px; font-size: 0.9rem; background: transparent; color: var(--fg); border: 1px solid var(--line); }
+.more { margin: 12px 0 0; color: var(--muted); }
+.howto { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); list-style: none;
+  padding: 0; margin: 0 0 8px; }
+.howto li { display: flex; gap: 12px; align-items: flex-start; margin: 0; padding: 14px; border-radius: 12px;
+  background: var(--card); border: 1px solid var(--line); }
+.howto .icon { width: 28px; height: 28px; color: var(--accent); }
+#read button { margin-top: 12px; }
 #steps { list-style: none; padding: 0; margin: 12px 0; }
 #steps > li { margin: 6px 0; }
 #steps .ok { color: var(--ok); }
 #steps .fail { color: var(--fail); font-weight: 600; }
 #steps .error, #steps .hint { color: var(--fg); font-weight: normal; }
-.note, footer { color: var(--muted); font-size: 0.9rem; }
+.note { color: var(--muted); font-size: 0.9rem; }
 .warning { background: var(--warn-bg); border-left: 4px solid var(--warn-line); padding: 8px 12px; }
+#results { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 4px 16px 12px; }
 table { border-collapse: collapse; width: 100%; margin: 8px 0; font-variant-numeric: tabular-nums; }
 th, td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: right; }
 th { border-bottom-width: 2px; }
-code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-footer { margin-top: 32px; padding-top: 12px; border-top: 1px solid var(--line); }
+footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.9rem; }
+footer p { display: flex; gap: 8px; align-items: flex-start; }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M3.5 17a9 9 0 1 1 17 0"/><path d="M12 16l5-6"/><circle cx="12" cy="16" r="1.5"/><path d="M18.4 6.6l1.4-1.4"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M11 18.5h2"/></symbol>
+  <symbol id="i-laptop" viewBox="0 0 24 24"><rect x="4" y="4.5" width="16" height="11" rx="1.5"/><path d="M2 19.5h20"/></symbol>
+  <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="2"/><path d="M7 9.5l3 2.5-3 2.5M12.5 15h4.5"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14-4.5L4 9"/><path d="M4 4v5h5"/><path d="M4 13a8 8 0 0 0 14 4.5l2-2.5"/><path d="M20 20v-5h-5"/></symbol>
+  <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2.5v4M15 2.5v4"/><rect x="6" y="6.5" width="12" height="7" rx="2"/><path d="M12 13.5v3a3 3 0 0 0 3 3h3"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8L20 3M15.5 7.5l3 3M13.5 9.5l2 2"/></symbol>
+  <symbol id="i-bluetooth" viewBox="0 0 24 24"><path d="M7 7l10 10-5 5V2l5 5L7 17"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 6l-6 6 6 6M16 6l6 6-6 6"/></symbol>
+</svg>
 <main>
-<h1>DME over-rev reader</h1>
-<p>This page reads the over-rev counters of a Porsche engine computer (DME) through an OBDLink adapter. For each
-of six engine-speed ranges above the rev limit, it shows how many ignitions happened in that range and the engine's
-operating hours when that range was last reached. It also shows the highest engine speed on record and the stored
-fault codes.</p>
-<p>It only reads. It sends no command that changes anything in the car. Nothing is installed, and the results stay
-on this computer. It is tested only on a US 991.2 GT3 DME (part number 991.618.692.17, software 3671). For any other
-DME, it shows a note. This page itself has not yet been tried with a real adapter; the command-line
-version has.</p>
+<header>
+  <div class="hero">
+    <svg class="icon" aria-hidden="true"><use href="#i-gauge"/></svg>
+    <h1>Porsche over-rev reader</h1>
+  </div>
+  <p class="lead">See how often your engine went past the rev limit, and when. Made for the 991.2 GT3. It only reads.</p>
+  <ul class="need" aria-label="You need">
+    <li><svg class="icon" aria-hidden="true"><use href="#i-plug"/></svg>An OBDLink adapter, such as the MX+</li>
+    <li><svg class="icon" aria-hidden="true"><use href="#i-key"/></svg>Ignition on, engine off</li>
+  </ul>
+</header>
 
-<h2>Before you start</h2>
-<ul>
-<li>Pair the OBDLink in your computer's Bluetooth settings, or plug in a USB OBDLink.</li>
-<li>Plug the adapter into the car's diagnostic port.</li>
-<li>Turn the ignition on, with the engine off.</li>
-<li>Make sure that no phone is connected to the adapter.</li>
-</ul>
+<h2>Pick a way</h2>
+<div class="ways">
+  <section class="card">
+    <svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg>
+    <h3>On your phone</h3>
+    <p class="sub">The OBDLink app. No code.</p>
+    <ol>
+      <li><a href="overrev-pids.udpid" download>Download the PID file</a> on the phone.</li>
+      <li>In the app: <b>Settings › User&#8209;Defined&nbsp;PIDs › ⋮&nbsp;›&nbsp;Import</b>. It replaces PIDs you added yourself.</li>
+      <li>Open <b>PID Values</b>.</li>
+    </ol>
+    <p class="note">The file only reads. The app itself can also clear codes.</p>
+    <span class="pill tested">✓ Import tested on an iPhone</span>
+  </section>
+  <section class="card">
+    <svg class="icon" aria-hidden="true"><use href="#i-laptop"/></svg>
+    <h3>In this browser</h3>
+    <p class="sub">Chrome or Edge on a computer. Nothing to install.</p>
+    <a class="button" id="browser-go" href="#read">Read my car</a>
+    <span class="pill new">New: not yet tried with the car</span>
+  </section>
+</div>
 
-<button id="connect" type="button">Connect</button>
-<p id="picker-note" class="note">Your browser then shows a list of ports. Choose the OBDLink.</p>
-<p id="message" role="status"></p>
-<ol id="steps" aria-live="polite"></ol>
-<section id="results" aria-live="polite" hidden></section>
+<p class="more">Or with a Raspberry Pi or another Linux computer:</p>
+<div class="ways stack">
+  <section class="card small">
+    <svg class="icon" aria-hidden="true"><use href="#i-terminal"/></svg>
+    <div>
+      <h3>Once, in a terminal</h3>
+      <p class="sub">Installs overrev and reads the car.</p>
+      <div class="cmd-row"><code class="cmd">curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh</code><button type="button" class="copy"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button></div>
+      <span class="pill new">New: not yet tried with the car</span>
+    </div>
+  </section>
+  <section class="card small">
+    <svg class="icon" aria-hidden="true"><use href="#i-repeat"/></svg>
+    <div>
+      <h3>Every time the Pi starts</h3>
+      <p class="sub">A Pi in the car reads at each start and posts to Discord or ntfy.</p>
+      <div class="cmd-row"><code class="cmd">curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh -s -- --auto</code><button type="button" class="copy"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button></div>
+      <span class="pill new">New: not yet tried with the car</span>
+    </div>
+  </section>
+</div>
+
+<section id="read">
+  <h2><svg class="icon" aria-hidden="true"><use href="#i-laptop"/></svg> Read in this browser</h2>
+  <ol class="howto">
+    <li><svg class="icon" aria-hidden="true"><use href="#i-bluetooth"/></svg><span>Pair the OBDLink with this computer, or plug in a USB one.</span></li>
+    <li><svg class="icon" aria-hidden="true"><use href="#i-plug"/></svg><span>Plug it into the car, under the dashboard.</span></li>
+    <li><svg class="icon" aria-hidden="true"><use href="#i-key"/></svg><span>Ignition on, engine off. Close the OBDLink app on your phone.</span></li>
+  </ol>
+  <button id="connect" type="button">Connect</button>
+  <p id="picker-note" class="note">Then choose the OBDLink in the list.</p>
+  <p id="message" role="status"></p>
+  <ol id="steps" aria-live="polite"></ol>
+  <section id="results" aria-live="polite" hidden></section>
+</section>
 
 <footer>
-<p>overrev is open source. It works in Chrome or Edge on a computer. Source, command-line version and phone
-instructions: <a href="https://github.com/YannKr/porsche-overrev">github.com/YannKr/porsche-overrev</a></p>
+  <p><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg><span>Only reads: it never changes anything in the car. This page sends your results nowhere.</span></p>
+  <p><svg class="icon" aria-hidden="true"><use href="#i-gauge"/></svg><span>Tested on one car: a US 991.2 GT3 (DME 991.618.692.17, software 3671). Other DMEs get a note.</span></p>
+  <p><svg class="icon" aria-hidden="true"><use href="#i-code"/></svg><span>Mac, Windows, CAN interfaces and all options: <a href="https://github.com/YannKr/porsche-overrev">github.com/YannKr/porsche-overrev</a>. MIT license. Not affiliated with Porsche.</span></p>
 </footer>
 </main>
 <script type="module" src="app.js"></script>
