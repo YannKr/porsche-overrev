@@ -312,4 +312,56 @@
     <Priority>High</Priority>
     <NumberOfDecimalPlaces>1</NumberOfDecimalPlaces>
   </pid>
+  <pid type="4">
+    <Name>Peak engine speed</Name>
+    <Description>EngPrt_nMaxSpd: highest engine speed ever recorded</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName>rpm</MetricName>
+      <EnglishName>rpm</EnglishName>
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>16000</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1B8A</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">(A*256+B)/2</Equation>
+    </Formula>
+    <UniqueId>ZeXRVc</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>0</NumberOfDecimalPlaces>
+  </pid>
+  <pid type="4">
+    <Name>Time above over-speed limit</Name>
+    <Description>EngPrt_tiOverSpd: total time above the over-speed limit</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName>s</MetricName>
+      <EnglishName>s</EnglishName>
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>13108</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1B8B</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">(A*256+B)/5</Equation>
+    </Formula>
+    <UniqueId>mFEgRh</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>1</NumberOfDecimalPlaces>
+  </pid>
 </doc>

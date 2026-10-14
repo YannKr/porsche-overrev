@@ -1,9 +1,11 @@
 """One-off: print the DME identification fields (VIN, part numbers, software) through an OBDLink.
 
-Read-only: 10 03, then 22 <DID> for each field. Usage: python scripts/read_ident.py /dev/rfcomm0
+Read-only: 10 03, then 22 <DID> for each field.
+Usage: python scripts/read_ident.py [PORT]   (without PORT it finds the OBDLink like `overrev` does)
 """
 import sys
 
+from overrev.bluetooth import open_adapter
 from overrev.transport import TransportError, open_elm
 from overrev.uds import NegativeResponse, UdsClient
 
@@ -15,7 +17,7 @@ DIDS = [
     (0xF18C, "ECU serial number"),
 ]
 
-with open_elm(sys.argv[1]) as t:
+with open_elm(sys.argv[1]) if len(sys.argv) > 1 else open_adapter() as t:
     client = UdsClient(t)
     client.start_session()
     for did, name in DIDS:

@@ -5,3 +5,4 @@ __pycache__/
 # automatic-mode output (holds the VIN)
 log/
 *.jsonl
+.DS_Store

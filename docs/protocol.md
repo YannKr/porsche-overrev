@@ -54,6 +54,28 @@ most recent over-rev in that range. One rev excursion that reaches range 5
 passes through ranges 3 and 4 at the same moment, so the three share a
 stamp.
 
+## Peak record
+
+| DID | Tester signal | Scale | Test car (2026-10-13) |
+|---|---|---|---|
+| `1B8A` | `EngPrt_nMaxSpd`, highest engine speed ever | 0.5 rpm per bit | `55F0` = 11000 rpm |
+| `1B8B` | `EngPrt_tiOverSpd`, total time above the over-speed limit | 0.2 s per bit | `0017` = 4.6 s |
+
+Both matched the tester screen of the same day. The `1B8B` scale rests on
+that one reading. The odometer at the peak (`EngPrt_lenMilgNMaxSpd`) and the
+total operating hours are on the same tester screen, but their DIDs are not
+known yet; `scripts/scan_dids.py` lists every DID in a range that answers.
+
+## Stored fault codes
+
+`19 02 2C` (ReadDTCInformation, report by status mask; mask `2C` = pending,
+confirmed, failed since last clear). The answer is
+`59 02 <availability mask>`, then 4 bytes per code: the 3-byte code and its
+status byte. Status bits: `01` active, `04` pending, `08` confirmed, `20`
+failed since the last clear. The tool shows the code as 6 hex digits and does
+not map it to a fault name. Clearing (`14`) is never sent. Not yet verified
+live in a plain `10 03` session.
+
 ## Session and security access
 
 No SecurityAccess (`27`) is needed. On the test car the DME answered all

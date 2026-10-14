@@ -28,14 +28,16 @@ _ALLOWED_SUBFUNCTIONS = {0x10: (0x01, 0x03), 0x3E: (0x00,)}
 
 
 def check_read_only(payload: bytes) -> None:
-    """Permit only 10 01/03, 22 <one DID>, 3E 00. Raise on anything else."""
+    """Permit only 10 01/03, 22 <one DID>, 3E 00, 19 02 <mask>. Raise on anything else."""
     sid = payload[0] if payload else None
     if sid == 0x22 and len(payload) == 3:
+        return
+    if sid == 0x19 and len(payload) == 3 and payload[1] == 0x02:  # read stored fault codes; clearing (14) stays blocked
         return
     if sid in _ALLOWED_SUBFUNCTIONS and len(payload) == 2 and payload[1] in _ALLOWED_SUBFUNCTIONS[sid]:
         return
     raise ReadOnlyViolation(
-        f"refusing to transmit {payload.hex() or '<empty>'}: only 10 01/03, 22 <DID> and 3E 00 are permitted"
+        f"refusing to transmit {payload.hex() or '<empty>'}: only 10 01/03, 22 <DID>, 3E 00 and 19 02 <mask> are permitted"
     )
 
 

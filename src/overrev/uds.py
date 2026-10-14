@@ -6,6 +6,8 @@ import time
 SID_SESSION = 0x10
 SID_READ_DID = 0x22
 SID_TESTER_PRESENT = 0x3E
+SID_READ_DTC = 0x19
+DTC_BY_STATUS_MASK = 0x02
 NEGATIVE = 0x7F
 NRC_PENDING = 0x78
 
@@ -100,6 +102,10 @@ class UdsClient:
 
     def tester_present(self) -> None:
         self.request(bytes((SID_TESTER_PRESENT, 0x00)))
+
+    def read_fault_codes(self, mask: int = 0x2C) -> bytes:
+        """19 02 <mask>; 2C = pending, confirmed, failed since last clear (what the dealer tester asks)."""
+        return self.request(bytes((SID_READ_DTC, DTC_BY_STATUS_MASK, mask)))
 
     def read_did(self, did: int) -> bytes:
         response = self.request(bytes((SID_READ_DID, did >> 8, did & 0xFF)))

@@ -1,5 +1,18 @@
 # overrev: read-only over-rev counters for the Porsche 991.2 GT3 DME
 
+```bash
+curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh
+```
+
+One line on a Raspberry Pi or another Linux machine with Bluetooth: plug the
+OBDLink MX+ into the car, turn the ignition on (engine off), and run it. It
+installs `overrev` into `~/.local/share/overrev` (its own Python venv,
+nothing system-wide), pairs the adapter the first time (press the MX+
+**Connect** button when asked), and prints the over-rev counters, the peak
+record and the stored fault codes. After that, just run `overrev`. Run the
+line again to update. You can read [get.sh](get.sh) first. macOS, Windows and
+phones: see [Platforms](#platforms).
+
 > **Tested on one car only: a 2018 Porsche 991.2 GT3, US market**
 > (PIWIS vehicle `GT3_991II_USA`, DME part number 991.618.692.17, DME
 > software 3671). Other models, markets or DME software versions can use
@@ -36,6 +49,17 @@ twelve values.
   the most recent over-rev in that range. Ranges that one rev excursion swept
   through at the same time have the same stamp.
 
+It also reads the DME's all-time peak record and its stored fault codes:
+
+| Value | Request | Scale |
+|---|---|---|
+| Highest engine speed ever (`EngPrt_nMaxSpd`) | `22 1B8A` | raw ÷ 2 = rpm |
+| Total time above the over-speed limit (`EngPrt_tiOverSpd`) | `22 1B8B` | raw ÷ 5 = seconds |
+| Stored fault codes | `19 02 2C` | 3-byte codes with status (active, confirmed, pending, stored) |
+
+The fault codes are shown as the DME reports them (6 hex digits). The tool
+does not translate them into fault names.
+
 Example (the test car, October 2026):
 
 ```
@@ -46,14 +70,19 @@ Range  Ignitions  Time (min)  raw count  raw time
     4        272       27252        272      4542
     5        166       27252        166      4542
     6        104        6312        104      1052
+
+Peak engine speed: 11000 rpm. Time above the over-speed limit: 4.6 s.
 ```
+
+The stored fault codes follow, one per line.
 
 ## Read-only by design
 
 The transport refuses to send anything other than `10 01`, `10 03`,
-`22 <one DID>` and `3E 00`. It raises an error before transmit for anything
-else. The tool never sends SecurityAccess (`27`), writes, routines, resets or
-clear-codes requests.
+`22 <one DID>`, `3E 00` and `19 02 <mask>` (read stored fault codes). It
+raises an error before transmit for anything else. The tool never sends
+SecurityAccess (`27`), writes, routines, resets or clear-codes requests
+(`14`).
 
 No SecurityAccess is needed. On the test car, the DME answered all twelve
 DIDs in the extended session (`10 03`). It also answered in the default
@@ -64,46 +93,47 @@ reads all twelve as plain mode-22 PIDs.
 
 | Option | Status |
 |---|---|
-| OBDLink MX+ over Bluetooth, Linux (Raspberry Pi) | Tested live |
+| OBDLink MX+ over Bluetooth, Linux (Raspberry Pi), through `/dev/rfcomm0` | Tested live |
+| OBDLink MX+ over Bluetooth, Linux, direct connection (plain `overrev`) | Not yet tested live |
 | OBDLink MX+ app on iPhone, user-defined PIDs | Tested live |
 | OBDLink app on Android | Same file format; not tested |
 | Any SocketCAN interface (CANable, USB2CAN, CAN HAT) | Tested offline only (python-can virtual bus); the SocketCAN path itself is untested |
 | OBDLink MX+ on macOS (`/dev/cu.*`) | Not tested |
+| OBDLink MX+ on Windows (COM port) | Not supported by the one-liner; manual use not tested |
 
-## Install
+## Platforms
 
-```bash
-python3 -m venv .venv
-.venv/bin/pip install -e '.[test]'
-```
+| Platform | What works | Status |
+|---|---|---|
+| Linux (Raspberry Pi OS, any distribution with BlueZ) | The one-liner, automatic pairing, direct Bluetooth connection, automatic mode (systemd) | Supported. The read through `/dev/rfcomm0` is tested live; the direct connection is not yet. |
+| macOS | The one-liner installs. Pair the MX+ once in System Settings → Bluetooth (press its Connect button first). `overrev` then uses the serial port that macOS creates for it (`/dev/cu.OBDLink…`). No automatic pairing, no automatic mode. | Not tested with the adapter. The MX+ talks to Apple devices through Apple's accessory protocol, so it is not certain that macOS creates the serial port. |
+| Windows | Not the one-liner (it is a shell script) and not the automatic pairing (it uses BlueZ). In principle: pair the MX+ in Windows Bluetooth settings (Windows creates an outgoing COM port), install with `pip install https://github.com/YannKr/porsche-overrev/archive/refs/heads/main.tar.gz`, then run `overrev read --elm COM5` (your COM port). | Not supported, not tested. |
+| iPhone, Android | No code: the OBDLink app with the PID file, see [Phone](#phone-no-code-obdlink-app). | Tested on iPhone; Android not tested. |
 
-## One-off read with an OBDLink MX+ (Linux)
-
-1. Pair the MX+ (one time only). Plug it in, turn the ignition on (engine
-   off), and press the **Connect** button on the MX+. The BT LED blinks fast,
-   and pairing mode stays on for 2 minutes. Then run
-   `deploy/pair-obdlink.sh`. It finds the adapter, pairs and trusts it, and
-   binds it to `/dev/rfcomm0`. The binding is lost at reboot. After a reboot
-   run `sudo rfcomm bind 0 <MAC> 1` (no button press needed).
-2. Read:
+## Using it
 
 ```bash
-.venv/bin/overrev read --elm /dev/rfcomm0          # table
-.venv/bin/overrev read --elm /dev/rfcomm0 --json   # JSON
-```
-
-To print the DME identification (VIN, part numbers, software version, engine
-code, programming history):
-
-```bash
-.venv/bin/python scripts/read_ident.py /dev/rfcomm0
-```
-
-With a SocketCAN interface instead:
-
-```bash
+overrev                    # find the OBDLink (pair it if needed) and print the table
+overrev --json             # the same as JSON
+overrev --mac <MAC>        # a specific adapter
+overrev read --elm /dev/rfcomm0             # an adapter bound with rfcomm
 sudo ip link set can0 up type can bitrate 500000
-.venv/bin/overrev read --channel can0
+overrev read --channel can0                 # a SocketCAN interface instead
+```
+
+`overrev` connects to the adapter directly over Bluetooth (RFCOMM), with no
+root and no `rfcomm bind`. If no OBDLink is paired yet, it asks you to press
+the **Connect** button on the MX+ (the BT LED blinks fast; pairing mode lasts
+2 minutes), then pairs and trusts it. This needs BlueZ (`bluetoothctl`),
+which Raspberry Pi OS has.
+
+From a checkout, two more read-only scripts (both find the adapter the same
+way, or take a serial port as the last argument):
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install -e '.[test]'
+.venv/bin/python scripts/read_ident.py          # VIN, part numbers, software, engine code
+.venv/bin/python scripts/scan_dids.py 1B00 1BFF # every DID in the range that answers
 ```
 
 ## Automatic mode (Raspberry Pi)
@@ -115,7 +145,7 @@ the result to a Discord webhook. The post shows the ignitions added since the
 previous read. If the VIN is not the one you set, the read still happens, but
 the post says **UNVERIFIED CAR**.
 
-1. Pair the MX+ as above.
+1. Pair the MX+ once: run `overrev` with the car on, or `deploy/pair-obdlink.sh`.
 2. Create the configuration (it stays out of git, mode 600):
 
 ```bash
@@ -148,14 +178,15 @@ Logs:
 ## Phone, no code (OBDLink app)
 
 The DIDs also answer in the default session, so the OBDLink app's
-user-defined PIDs can read them. `deploy/obdlink/overrev-12-pids.udpid`
-holds all twelve in the app's own export format: header `ECM`, mode `22`,
-equation `A*256+B` for counts and `(A*256+B)/10` for hours.
+user-defined PIDs can read them. `deploy/obdlink/overrev-pids.udpid` holds
+all twelve plus the two peak values, in the app's own export format: header
+`ECM`, mode `22`, equation `A*256+B` for counts, `(A*256+B)/10` for hours,
+`(A*256+B)/2` for the peak rpm and `(A*256+B)/5` for the over-speed seconds.
 
 1. Get the file onto the phone (iCloud Drive, Files, mail).
 2. In the app, go to **Settings → User-Defined PIDs → ⋮ → Import**. On the
    test iPhone, the import **replaced** the existing user-defined PIDs.
-3. Connect to the car and open **PID Values** to see all twelve.
+3. Connect to the car and open **PID Values** to see all fourteen.
 
 The phone app is not limited to reads. Its clear-codes buttons are outside
 this tool's read-only guard.
@@ -199,6 +230,8 @@ The suite checks the following:
   multi-frame answers and lost commands.
 - The automatic mode handles retries, a foreign VIN, DME refusals and failed
   Discord posts.
+- Bluetooth: finding a paired OBDLink, pairing when none is, the socket
+  wrapper, and the messages when the adapter is unreachable.
 
 ## License
 

@@ -13,8 +13,11 @@ COUNT_DIDS = ["1b68", "1b69", "1b6a", "1bbb", "1bbc", "1bbd"]
 TIME_DIDS = ["1741", "1743", "1745", "1bb8", "1bb9", "1bba"]
 
 
-def car(counts=(3382, 1135, 664, 272, 166, 104), times_raw=(5158, 4988, 4542, 4542, 4542, 1052), refuse=None):
-    table = {"1003": ["5003003201F4"], "22f190": VIN_FRAMES}
+def car(counts=(3382, 1135, 664, 272, 166, 104), times_raw=(5158, 4988, 4542, 4542, 4542, 1052), refuse=None,
+        peak_raw=(0x55F0, 0x0017)):
+    table = {"1003": ["5003003201F4"], "22f190": VIN_FRAMES,
+             "221b8a": [f"621B8A{peak_raw[0]:04X}"], "221b8b": [f"621B8B{peak_raw[1]:04X}"],
+             "19022c": ["5902FF00ABCD60"]}
     for did, value in [*zip(COUNT_DIDS, counts), *zip(TIME_DIDS, times_raw)]:
         table["22" + did] = [f"62{did.upper()}{value:04X}"]
     if refuse:
@@ -144,3 +147,28 @@ def test_refused_session_is_recorded_not_crashed(tmp_path):
     record, post = run(tmp_path, no_session)
     assert "NRC 0x22" in record["error"] and record["vin"] is None
     assert "UNVERIFIED CAR" in post.messages[0]
+
+
+def test_peak_record_is_recorded_and_posted(tmp_path):
+    record, post = run(tmp_path, car())
+    assert record["peak"]["max_rpm"] == 11000 and record["peak"]["over_speed_s"] == 4.6
+    assert "11000 rpm" in post.messages[0] and "4.6 s" in post.messages[0]
+
+
+def test_new_over_speed_time_since_the_previous_read_is_shown(tmp_path):
+    run(tmp_path, car(peak_raw=(0x55F0, 0x0016)))
+    _, post = run(tmp_path, car(peak_raw=(0x55F0, 0x0017)))
+    assert "+0.2 s" in post.messages[0]
+
+
+def test_dme_without_the_peak_dids_still_records_the_over_revs(tmp_path):
+    respond = car()
+    no_peak = lambda request: ["7F2231"] if request.hex() in ("221b8a", "221b8b") else respond(request)
+    record, post = run(tmp_path, no_peak)
+    assert len(record["ranges"]) == 6 and record["peak"] is None and "error" not in record
+
+
+def test_fault_codes_are_recorded_and_posted(tmp_path):
+    record, post = run(tmp_path, car())
+    assert record["fault_codes"] == [{"code": "00ABCD", "status": 0x60}]
+    assert "00ABCD" in post.messages[0]

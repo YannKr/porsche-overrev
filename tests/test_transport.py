@@ -37,6 +37,10 @@ def h(s):
     "3e80",            # tester present with suppress bit: not on the allowlist
     "22174117 43",     # two DIDs in one request
     "22",              # no DID
+    "1904000a79ff",    # ReadDTCInformation snapshot: only 19 02 is allowed
+    "190a",            # ReadDTCInformation supported DTCs
+    "1902",            # 19 02 without a status mask
+    "19022c00",        # 19 02 with extra bytes
     "",                # empty
 ])
 def test_allowlist_blocks_before_transmit(payload):
@@ -46,7 +50,7 @@ def test_allowlist_blocks_before_transmit(payload):
     assert t.sent == []
 
 
-@pytest.mark.parametrize("payload", ["1001", "1003", "221741", "22f190", "3e00"])
+@pytest.mark.parametrize("payload", ["1001", "1003", "221741", "22f190", "3e00", "19022c"])
 def test_allowlist_permits_read_only_services(payload):
     t = Recording()
     t.send(h(payload))

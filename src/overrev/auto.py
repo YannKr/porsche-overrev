@@ -13,7 +13,7 @@ from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-from .decode import read_over_revs
+from .decode import FaultCode, parse_fault_codes, read_over_revs, read_peak
 from .transport import TransportError, open_elm
 from .uds import ProtocolError, UdsClient
 
@@ -32,6 +32,14 @@ def read_car(transport, allowed_vins) -> dict:
         record["vin"] = client.read_did(VIN_DID).decode("ascii", "replace").strip("\0 ")
         record["verified"] = record["vin"] in allowed_vins
         record["ranges"] = [asdict(r) for r in read_over_revs(client)]
+        try:
+            record["peak"] = asdict(read_peak(client))
+        except ProtocolError:
+            record["peak"] = None  # a DME without the peak record
+        try:
+            record["fault_codes"] = [asdict(c) for c in parse_fault_codes(client.read_fault_codes())]
+        except ProtocolError:
+            record["fault_codes"] = None
     except ProtocolError as e:
         record["error"] = str(e)
     return record
@@ -94,6 +102,18 @@ def format_message(record: dict, previous) -> str:
         new = f"+{r['ignitions'] - before[r['range']]}" if r["range"] in before else "-"
         rows.append(f"{r['range']:>5}  {r['ignitions']:>9}  {new:>5}  {r['time_min'] / 60:>19.1f}")
     lines.append("```\n" + "\n".join(rows) + "\n```")
+    peak, before_peak = record.get("peak"), (previous or {}).get("peak")
+    if peak:
+        since = f" (+{peak['over_speed_s'] - before_peak['over_speed_s']:.1f} s since the previous read)" if before_peak else ""
+        lines.append(f"Peak engine speed {peak['max_rpm']:g} rpm; {peak['over_speed_s']:.1f} s above the over-speed limit{since}.")
+    else:
+        lines.append("Peak record: not available on this DME.")
+    codes = record.get("fault_codes")
+    if codes is None:
+        lines.append("Fault memory: not available.")
+    else:
+        listed = "; ".join(f"{c['code']} {FaultCode(**c).describe()}" for c in codes)
+        lines.append(f"Stored fault codes ({len(codes)}): {listed}." if codes else "Stored fault codes: none.")
     lines.append(f"New = ignitions since the read of {previous['time'][:16].replace('T', ' ')}." if previous
                  else "First logged read for this VIN.")
     return "\n".join(lines)
