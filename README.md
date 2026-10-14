@@ -13,6 +13,23 @@ record and the stored fault codes. After that, just run `overrev`. Run the
 line again to update. You can read [get.sh](get.sh) first. macOS, Windows and
 phones: see [Platforms](#platforms).
 
+Before it installs anything, the installer checks that it is not running as
+root, that Python is 3.10 or newer with venv support, and (on Linux) that
+BlueZ is installed and a Bluetooth adapter is present and on. Each install
+goes into a fresh environment that must start before it replaces the old one,
+so a failed update keeps the previous install working. It asks before it
+contacts the car, and logs to `~/.local/share/overrev/install.log`.
+Options go after `sh -s --`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh -s -- --no-run     # install or update only
+curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh -s -- --yes        # read without asking
+curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh -s -- --uninstall
+```
+
+`OVERREV_REF=<tag or commit>` (set for `sh`) installs that version instead of
+`main`.
+
 > **Tested on one car only: a 2018 Porsche 991.2 GT3, US market**
 > (PIWIS vehicle `GT3_991II_USA`, DME part number 991.618.692.17, DME
 > software 3671). Other models, markets or DME software versions can use
