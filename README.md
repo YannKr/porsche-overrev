@@ -70,9 +70,6 @@ reads all twelve as plain mode-22 PIDs.
 | Any SocketCAN interface (CANable, USB2CAN, CAN HAT) | Tested offline only (python-can virtual bus); the SocketCAN path itself is untested |
 | OBDLink MX+ on macOS (`/dev/cu.*`) | Not tested |
 
-A passive BMW "ENET" cable does not work. The 991.2 diagnoses over CAN, not
-Ethernet.
-
 ## Install
 
 ```bash
