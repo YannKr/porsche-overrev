@@ -1,0 +1,20 @@
+# Once per boot: wait for the OBDLink MX+, read VIN + over-revs (read-only), log, post to Discord.
+# Needs ~/.config/overrev/env (OVERREV_MAC=..., OVERREV_VIN=...) and ~/.config/overrev/webhook (URL), both mode 600.
+# Change User= and the /home/pi paths if your user or checkout differ.
+[Unit]
+Description=overrev: read the DME over-rev counters once per boot via the OBDLink MX+
+Wants=network-online.target
+After=network-online.target bluetooth.service
+
+[Service]
+Type=simple
+User=pi
+EnvironmentFile=/home/pi/.config/overrev/env
+ExecStartPre=-+/usr/bin/rfcomm release 0
+ExecStartPre=+/usr/bin/rfcomm bind 0 ${OVERREV_MAC} 1
+ExecStart=/home/pi/overrev/.venv/bin/overrev auto --elm /dev/rfcomm0 --vin ${OVERREV_VIN} --log-dir /home/pi/overrev/log --webhook-file /home/pi/.config/overrev/webhook
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

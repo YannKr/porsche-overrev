@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc culture="" version="1.01">
+  <pid type="4">
+    <Name>Over-rev 2 last event (op h)</Name>
+    <Description>EngPrt_tiNMax2: engine operating hours at the last over-rev in range 2</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName>h</MetricName>
+      <EnglishName>h</EnglishName>
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>7000</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1743</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">(A*256+B)/10</Equation>
+    </Formula>
+    <UniqueId>iTeaYw</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>1</NumberOfDecimalPlaces>
+  </pid>
+</doc>

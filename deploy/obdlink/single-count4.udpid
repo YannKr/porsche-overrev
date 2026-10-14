@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc culture="" version="1.01">
+  <pid type="4">
+    <Name>Over-rev 4 ignitions</Name>
+    <Description>EngPrt_nrIgnNMax4: ignitions in over-rev range 4</Description>
+    <Category>Engine</Category>
+    <Manufacturer>Generic</Manufacturer>
+    <Notes />
+    <Units>
+      <MetricName />
+      <EnglishName />
+    </Units>
+    <Bounds>
+      <Min>0</Min>
+      <Max>65535</Max>
+    </Bounds>
+    <MetricToEnglishScaleFactor>1</MetricToEnglishScaleFactor>
+    <MetricToEnglishOffset>0</MetricToEnglishOffset>
+    <OBD2Header>ECM</OBD2Header>
+    <OBD2Mode>22</OBD2Mode>
+    <PIDRequestNumber>1BBB</PIDRequestNumber>
+    <Formula>
+      <Equation invariant="true">A*256+B</Equation>
+    </Formula>
+    <UniqueId>GJoGCt</UniqueId>
+    <Priority>High</Priority>
+    <NumberOfDecimalPlaces>0</NumberOfDecimalPlaces>
+  </pid>
+</doc>

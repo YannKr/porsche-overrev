@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "overrev"
+version = "0.1.0"
+description = "Read-only Porsche DME over-rev counter reader (UDS over CAN); tested on a US 991.2 GT3 only"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+    "python-can>=4.3",
+    "can-isotp>=2.0",
+    "pyserial>=3.5",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.scripts]
+overrev = "overrev.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
