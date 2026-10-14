@@ -61,7 +61,7 @@ def test_pairs_when_no_obdlink_is_paired(monkeypatch):
 
 
 def test_explicit_mac_skips_discovery(monkeypatch):
-    calls = fake_bluez(monkeypatch, paired=["AA:AA:AA:AA:AA:AA"])
+    calls = fake_bluez(monkeypatch, paired=["00:11:22:33:44:66"])
     bluetooth.open_adapter(MX, platform="linux", say=lambda msg: None)
     assert calls == [MX]
 

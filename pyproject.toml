@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "overrev"
-version = "0.2.0"
+version = "0.3.0"
 description = "Read-only Porsche DME over-rev counter reader (UDS over CAN); tested on a US 991.2 GT3 only"
 requires-python = ">=3.10"
 license = {text = "MIT"}

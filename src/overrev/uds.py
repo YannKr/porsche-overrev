@@ -104,7 +104,7 @@ class UdsClient:
         self.request(bytes((SID_TESTER_PRESENT, 0x00)))
 
     def read_fault_codes(self, mask: int = 0x2C) -> bytes:
-        """19 02 <mask>; 2C = pending, confirmed, failed since last clear (what the dealer tester asks)."""
+        """19 02 <mask>; 2C = pending, confirmed, failed since last clear (the mask a dealer tester uses)."""
         return self.request(bytes((SID_READ_DTC, DTC_BY_STATUS_MASK, mask)))
 
     def read_did(self, did: int) -> bytes:

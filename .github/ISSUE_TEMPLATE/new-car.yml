@@ -1,0 +1,28 @@
+name: Results from my car
+description: Share what overrev read on a car it has not been tested on
+title: "Car report: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        overrev is only tested on one engine computer (a 991.2 GT3). On any other car it still shows the counters, but they may not mean what the labels say. Your result helps check them.
+
+        Run `overrev probe` with the ignition on and the engine off, then paste what it printed below. The output holds no VIN or serial number.
+  - type: input
+    id: car
+    attributes:
+      label: Car (model, year, market)
+      placeholder: 2019 911 GT3 (991.2), Europe
+    validations:
+      required: true
+  - type: textarea
+    id: probe
+    attributes:
+      label: Output of overrev probe
+    validations:
+      required: true
+  - type: textarea
+    id: tester
+    attributes:
+      label: Dealer tester values (optional)
+      description: If a dealer tester showed the over-rev ranges for this car, the values it showed.

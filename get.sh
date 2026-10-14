@@ -5,8 +5,9 @@
 #
 # Options (pass them as: ... | sh -s -- --no-run):
 #   --no-run      install or update only, do not read the car
-#   --yes         read the car without asking first
-#   --uninstall   remove what this script installed
+#   --yes         read the car (or, with --auto, set up the automatic read) without asking first
+#   --auto        instead of one read, set up a read at every boot (Linux with systemd)
+#   --uninstall   remove what this script installed, including the automatic read
 # Environment:
 #   OVERREV_REF     branch, tag or commit to install (default: main)
 #   OVERREV_SRC     install from this pip source instead (a path or URL; for testing)
@@ -27,18 +28,23 @@ main() {
     LOG=$DIR/install.log
     RUN=1
     ASK=1
+    AUTO=0
 
     for arg in "$@"; do
         case $arg in
             --no-run) RUN=0 ;;
             --yes) ASK=0 ;;
+            --auto) AUTO=1 ;;
             --uninstall) uninstall; return ;;
-            *) die "unknown option '$arg'. Options: --no-run, --yes, --uninstall" ;;
+            *) die "unknown option '$arg'. Options: --no-run, --yes, --auto, --uninstall" ;;
         esac
     done
 
     say "overrev installer"
     [ "$(id -u)" -ne 0 ] || die "do not run this as root or with sudo. It installs into your home directory."
+    if [ "$AUTO" -eq 1 ] && [ "$(uname -s)" != Linux ]; then
+        die "--auto needs Linux with systemd; on this system run overrev read instead"
+    fi
     check_system
     check_python
     check_link
@@ -53,9 +59,16 @@ main() {
     fi
     if [ "$RUN" -eq 1 ]; then
         say ""
+        if [ "$AUTO" -eq 1 ]; then
+            exec "$DIR/current/bin/overrev" setup-auto
+        fi
         exec "$DIR/current/bin/overrev" read
     fi
-    say "To read the car: plug the OBDLink in, turn the ignition on (engine off), and run: overrev"
+    if [ "$AUTO" -eq 1 ]; then
+        say "To set up the automatic read: plug the OBDLink in, turn the ignition on (engine off), and run: overrev setup-auto"
+    else
+        say "To read the car: plug the OBDLink in, turn the ignition on (engine off), and run: overrev"
+    fi
 }
 
 say() { printf '%s\n' "$*"; }
@@ -155,10 +168,19 @@ fail() {
 confirm() {
     # The script arrives through a pipe, so ask on the terminal itself.
     if ! (: </dev/tty) 2>/dev/null; then
-        say "No terminal to ask on, so the car will not be read now (use --yes to read without asking)."
+        if [ "$AUTO" -eq 1 ]; then
+            say "No terminal to ask on, so the automatic read will not be set up now (use --yes to set it up without asking)."
+        else
+            say "No terminal to ask on, so the car will not be read now (use --yes to read without asking)."
+        fi
         return 1
     fi
-    printf '\nRead the car now? The OBDLink must be plugged in with the ignition on (engine off).\n' >/dev/tty
+    if [ "$AUTO" -eq 1 ]; then
+        printf '\nSet up the automatic read now? It reads the car once to check it, then runs at every boot.\n' >/dev/tty
+        printf 'The OBDLink must be plugged in with the ignition on (engine off).\n' >/dev/tty
+    else
+        printf '\nRead the car now? The OBDLink must be plugged in with the ignition on (engine off).\n' >/dev/tty
+    fi
     printf 'overrev only sends read requests. [Y/n] ' >/dev/tty
     read -r answer </dev/tty || answer=n
     case $answer in
@@ -167,6 +189,17 @@ confirm() {
 }
 
 uninstall() {
+    UNIT=$HOME/.config/systemd/user/overrev-auto.service
+    if [ -f "$UNIT" ]; then
+        if command -v systemctl >/dev/null 2>&1; then
+            systemctl --user disable --now overrev-auto.service >/dev/null 2>&1 || true
+        fi
+        rm -f "$UNIT"
+        if command -v systemctl >/dev/null 2>&1; then
+            systemctl --user daemon-reload >/dev/null 2>&1 || true
+        fi
+        say "Removed the automatic read. Its logs stay in $HOME/.local/state/overrev and its settings in $HOME/.config/overrev."
+    fi
     if [ -L "$LINK" ]; then
         case $(readlink "$LINK") in
             "$DIR"/*) rm -f "$LINK" ;;

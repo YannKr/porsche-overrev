@@ -264,4 +264,6 @@ def test_close_closes_the_port():
 
 def test_cli_reports_a_missing_adapter_port_cleanly(capsys):
     assert main(["read", "--elm", "/nonexistent/rfcomm0"]) == 1
-    assert capsys.readouterr().err.startswith("error:")
+    err = capsys.readouterr().err
+    assert "✗ Could not connect to the adapter" in err and "\nerror:" in err
+    assert "Traceback" not in err

@@ -1,6 +1,7 @@
 """Over-rev DIDs and scaling, verified against PIWIS on a 991.2 GT3 (GT3_991II_USA)."""
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from .uds import ProtocolError, UdsClient
@@ -12,6 +13,8 @@ class OverRevRange:
     count_did: int  # EngPrt_nrIgnNMax<n>: ignitions in this range, uint16 big-endian, x1
     time_did: int   # EngPrt_tiNMax<n>: operating-time counter, uint16 big-endian, x6 = minutes
 
+
+TABLE_EXPLANATION = "Op. h at last event: the engine's operating hours when that range was last reached."
 
 RANGES = (
     OverRevRange(1, 0x1B68, 0x1741),
@@ -31,6 +34,11 @@ class RangeReading:
     time_min: int
     count_raw: int
     time_raw: int
+
+    @property
+    def hours(self) -> float:
+        """Engine operating hours when this range was last reached."""
+        return self.time_min / 60
 
 
 def _u16(data: bytes) -> int:
@@ -70,6 +78,9 @@ class PeakReading:
     max_rpm_raw: int
     over_speed_raw: int
 
+    def describe(self) -> str:
+        return f"Peak engine speed: {self.max_rpm:g} rpm. Time above the over-speed limit: {self.over_speed_s:.1f} s."
+
 
 def decode_max_rpm(data: bytes) -> float:
     return _u16(data) / 2
@@ -103,3 +114,68 @@ def parse_fault_codes(response: bytes) -> list[FaultCode]:
     if len(response) < 3 or len(records) % 4:
         raise ProtocolError(f"malformed fault code answer {response.hex()}")
     return [FaultCode(records[i:i + 3].hex().upper(), records[i + 3]) for i in range(0, len(records), 4)]
+
+
+PART_NUMBER_DID = 0xF187
+SOFTWARE_DID = 0xF189
+VIN_DID = 0xF190
+
+# (part number, software) pairs the over-rev DIDs were verified on.
+TESTED_DMES = {("99161869217", "3671")}
+
+ISSUE_LINK = "https://github.com/YannKr/porsche-overrev/issues/new?template=new-car.yml"
+UNTESTED_NOTE = (
+    "This DME ({describe}) has not been tested with overrev, so the values may not mean what the labels say. "
+    f"Please share the output of 'overrev probe': {ISSUE_LINK}"
+)
+
+
+def text_field(data: bytes) -> str | None:
+    """An identification DID as text: ASCII as is, nothing as None, anything else as hex."""
+    text = data.strip(b"\0 ")
+    if not text:
+        return None
+    if all(0x20 <= b < 0x7F for b in text):
+        return text.decode("ascii")
+    return data.hex().upper()
+
+
+def format_part_number(part: str) -> str:
+    """99161869217 -> 991.618.692.17; anything that is not 11 digits is returned unchanged."""
+    if re.fullmatch(r"[0-9]{11}", part):
+        return f"{part[:3]}.{part[3:6]}.{part[6:9]}.{part[9:]}"
+    return part
+
+
+@dataclass(frozen=True)
+class Identity:
+    part_number: str | None
+    software: str | None
+
+    @property
+    def tested(self) -> bool:
+        return (self.part_number, self.software) in TESTED_DMES
+
+    def describe(self) -> str:
+        part = format_part_number(self.part_number) if self.part_number else "part number unknown"
+        software = f"software {self.software}" if self.software else "software unknown"
+        return f"DME {part}, {software}"
+
+
+def _read_text(client: UdsClient, did: int) -> str | None:
+    try:
+        return text_field(client.read_did(did))
+    except (ProtocolError, TimeoutError):
+        return None  # refused or silent: the field stays unknown, the read goes on
+
+
+def read_identity(client: UdsClient) -> Identity:
+    return Identity(_read_text(client, PART_NUMBER_DID), _read_text(client, SOFTWARE_DID))
+
+
+def read_vin(client: UdsClient) -> str | None:
+    """The VIN as text, or None when the DME refuses, stays silent or answers with padding only."""
+    try:
+        return client.read_did(VIN_DID).decode("ascii", "replace").strip("\0 ") or None
+    except (ProtocolError, TimeoutError):
+        return None

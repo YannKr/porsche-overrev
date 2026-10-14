@@ -1,4 +1,4 @@
-# Once per boot: wait for the OBDLink MX+, read VIN + over-revs (read-only), log, post to Discord.
+# Once per boot: wait for the OBDLink MX+, read VIN + over-revs (read-only), log, post to Discord or ntfy.
 # Needs ~/.config/overrev/env (OVERREV_MAC=..., OVERREV_VIN=...) and ~/.config/overrev/webhook (URL), both mode 600.
 # Change User= and the /home/pi paths if your user or checkout differ.
 [Unit]
@@ -15,6 +15,7 @@ ExecStartPre=+/usr/bin/rfcomm bind 0 ${OVERREV_MAC} 1
 ExecStart=/home/pi/overrev/.venv/bin/overrev auto --elm /dev/rfcomm0 --vin ${OVERREV_VIN} --log-dir /home/pi/overrev/log --webhook-file /home/pi/.config/overrev/webhook
 Restart=on-failure
 RestartSec=30
+RestartPreventExitStatus=2
 
 [Install]
 WantedBy=multi-user.target

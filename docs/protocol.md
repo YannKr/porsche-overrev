@@ -82,7 +82,7 @@ No SecurityAccess (`27`) is needed. On the test car the DME answered all
 twelve DIDs in the extended session (`10 03`). It also answered in the
 default session: checked directly for `1B68` and `1741`, and the OBDLink
 phone app reads all twelve as plain mode-22 PIDs. The tool only ever sends
-`10 01/03`, `22 <DID>` and `3E 00`.
+`10 01/03`, `22 <DID>`, `3E 00` and `19 02 <mask>`.
 
 If a DME refuses a DID with NRC `33` (securityAccessDenied), `22`
 (conditionsNotCorrect), `7E` or `7F` (not supported in active session), it

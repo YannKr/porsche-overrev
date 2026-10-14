@@ -13,6 +13,29 @@ record and the stored fault codes. After that, just run `overrev`. Run the
 line again to update. You can read [get.sh](get.sh) first. macOS, Windows and
 phones: see [Platforms](#platforms).
 
+No install, in the browser: https://yannkr.github.io/porsche-overrev/ (Chrome or Edge on a computer).
+
+Or run it once with [uv](https://docs.astral.sh/uv/), without installing it:
+
+```bash
+uvx --from https://github.com/YannKr/porsche-overrev/archive/main.tar.gz overrev
+uvx --from https://github.com/YannKr/porsche-overrev/archive/main.tar.gz overrev read --json
+uvx --from https://github.com/YannKr/porsche-overrev/archive/main.tar.gz overrev read --elm PORT
+```
+
+Put any arguments after `overrev`, as in the second and third lines. uv keeps
+the download in its cache. To fetch the newest version, add `--refresh` right
+after `uvx`:
+
+```bash
+uvx --refresh --from https://github.com/YannKr/porsche-overrev/archive/main.tar.gz overrev
+```
+
+`uvx` skips the installer's checks (BlueZ, a powered Bluetooth adapter, a
+Python with Bluetooth sockets). If the connection fails, use the installer, or
+give the adapter's serial port, as in the third line (`PORT` is for example
+`/dev/rfcomm0`).
+
 Before it installs anything, the installer checks that it is not running as
 root, that Python is 3.10 or newer with venv support, and (on Linux) that
 BlueZ is installed and a Bluetooth adapter is present and on. Each install
@@ -33,15 +56,19 @@ curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh 
 > **Tested on one car only: a 2018 Porsche 991.2 GT3, US market**
 > (PIWIS vehicle `GT3_991II_USA`, DME part number 991.618.692.17, DME
 > software 3671). Other models, markets or DME software versions can use
-> different identifiers or scales. In automatic mode, the tool flags any
-> other VIN as unverified. Use it at your own risk.
+> different identifiers or scales. `overrev read` says whether the DME it
+> found is the tested one. In automatic mode, the tool also flags any other
+> VIN (**OTHER CAR**) and any untested DME (**UNTESTED DME**). Use it at your
+> own risk.
 
 The DME counts every ignition at an engine speed above the rev limit, in six
 over-rev ranges. PIWIS shows these as `EngPrt_nrIgnNMax1..6` (number of
 ignitions) and `EngPrt_tiNMax1..6` (engine operating time at the most recent
 over-rev in that range). This tool reads the same twelve values with an
-OBDLink adapter or any SocketCAN interface. It shows them exactly as PIWIS
-does. You can also read them with no code at all, in the OBDLink phone app.
+OBDLink adapter or any SocketCAN interface. The numbers are the ones PIWIS
+shows (the table gives the operating time in hours, PIWIS shows minutes, and
+`--json` has the minutes). You can also read them with no code at all, in the
+OBDLink phone app.
 
 On the test car, the live read matched a PIWIS screen of the same day on all
 twelve values.
@@ -80,18 +107,23 @@ does not translate them into fault names.
 Example (the test car, October 2026):
 
 ```
-Range  Ignitions  Time (min)  raw count  raw time
-    1       3382       30948       3382      5158
-    2       1135       29928       1135      4988
-    3        664       27252        664      4542
-    4        272       27252        272      4542
-    5        166       27252        166      4542
-    6        104        6312        104      1052
+DME 991.618.692.17, software 3671 (tested)
+
+Range  Ignitions  Op. h at last event
+    1       3382                515.8
+    2       1135                498.8
+    3        664                454.2
+    4        272                454.2
+    5        166                454.2
+    6        104                105.2
+Op. h at last event: the engine's operating hours when that range was last reached.
 
 Peak engine speed: 11000 rpm. Time above the over-speed limit: 4.6 s.
 ```
 
-The stored fault codes follow, one per line.
+The stored fault codes follow, one per line. The first line names the DME and
+says whether overrev was tested on it. Before it, `overrev read` shows its
+steps (see [Using it](#using-it)).
 
 ## Read-only by design
 
@@ -99,7 +131,7 @@ The transport refuses to send anything other than `10 01`, `10 03`,
 `22 <one DID>`, `3E 00` and `19 02 <mask>` (read stored fault codes). It
 raises an error before transmit for anything else. The tool never sends
 SecurityAccess (`27`), writes, routines, resets or clear-codes requests
-(`14`).
+(`14`). The browser page has the same list, in JavaScript.
 
 No SecurityAccess is needed. On the test car, the DME answered all twelve
 DIDs in the extended session (`10 03`). It also answered in the default
@@ -114,6 +146,7 @@ reads all twelve as plain mode-22 PIDs.
 | OBDLink MX+ over Bluetooth, Linux, direct connection (plain `overrev`) | Not yet tested live |
 | OBDLink MX+ app on iPhone, user-defined PIDs | Tested live |
 | OBDLink app on Android | Same file format; not tested |
+| An OBDLink adapter (Bluetooth or USB) in the [browser page](#browser-page-desktop-chrome-or-edge) | Not yet tested live |
 | Any SocketCAN interface (CANable, USB2CAN, CAN HAT) | Tested offline only (python-can virtual bus); the SocketCAN path itself is untested |
 | OBDLink MX+ on macOS (`/dev/cu.*`) | Not tested |
 | OBDLink MX+ on Windows (COM port) | Not supported by the one-liner; manual use not tested |
@@ -122,9 +155,10 @@ reads all twelve as plain mode-22 PIDs.
 
 | Platform | What works | Status |
 |---|---|---|
-| Linux (Raspberry Pi OS, any distribution with BlueZ) | The one-liner, automatic pairing, direct Bluetooth connection, automatic mode (systemd) | Supported. The read through `/dev/rfcomm0` is tested live; the direct connection is not yet. |
+| Linux (Raspberry Pi OS, any distribution with BlueZ) | The one-liner, automatic pairing, direct Bluetooth connection, automatic mode (`overrev setup-auto`, or a system service you install by hand) | Supported. The read through `/dev/rfcomm0`, as a system service on a Raspberry Pi, is tested live; the direct connection and `setup-auto` are not yet. |
 | macOS | The one-liner installs. Pair the MX+ once in System Settings → Bluetooth (press its Connect button first). `overrev` then uses the serial port that macOS creates for it (`/dev/cu.OBDLink…`). No automatic pairing, no automatic mode. | Not tested with the adapter. The MX+ talks to Apple devices through Apple's accessory protocol, so it is not certain that macOS creates the serial port. |
 | Windows | Not the one-liner (it is a shell script) and not the automatic pairing (it uses BlueZ). In principle: pair the MX+ in Windows Bluetooth settings (Windows creates an outgoing COM port), install with `pip install https://github.com/YannKr/porsche-overrev/archive/refs/heads/main.tar.gz`, then run `overrev read --elm COM5` (your COM port). | Not supported, not tested. |
+| Desktop Chrome or Edge 117 or newer (Windows, macOS, Linux, ChromeOS) | The [browser page](#browser-page-desktop-chrome-or-edge): no install; Web Serial reaches a paired Bluetooth OBDLink or a USB one | Not yet tested with an adapter. Safari, Firefox and phone browsers cannot use it. |
 | iPhone, Android | No code: the OBDLink app with the PID file, see [Phone](#phone-no-code-obdlink-app). | Tested on iPhone; Android not tested. |
 
 ## Using it
@@ -144,6 +178,88 @@ the **Connect** button on the MX+ (the BT LED blinks fast; pairing mode lasts
 2 minutes), then pairs and trusts it. This needs BlueZ (`bluetoothctl`),
 which Raspberry Pi OS has.
 
+### What you see
+
+While it works, `overrev read` shows each step on its own line, with a tick
+when it worked and a cross when it did not. The results follow on standard
+output (see the example under [What it reads](#what-it-reads)).
+
+```
+✓ Connected to the adapter
+✓ The car answers
+✓ Read the over-rev counters
+```
+
+When a step fails, you get the cross, the error, and a `hint:` line that says
+what to try next. `overrev` then exits with status 1.
+
+```
+✓ Connected to the adapter
+✗ The car does not answer
+error: adapter: CAN ERROR
+hint: Turn the ignition on (engine off), wait a few seconds, then try again.
+```
+
+| Hint | What it means |
+|---|---|
+| The adapter is connected but does not respond. Unplug it for 10 seconds, plug it back in, then try again. | The Bluetooth link is up, but the adapter does not answer its setup commands. Unplugging it resets it. |
+| Turn the ignition on (engine off), wait a few seconds, then try again. | The adapter works, but the engine computer does not answer. Usually the ignition is off. |
+| The engine computer refused a diagnostic session. overrev is only tested on the 991.2 GT3 DME. | The engine computer answered, but said no. It is probably a different DME. |
+| On the tested 991.2 GT3 these values answer without SecurityAccess, so a refusal suggests a different DME or software version. This tool never sends SecurityAccess. | The engine computer refused to give a counter. overrev does not try to unlock it. |
+| The car stopped answering during the read. Keep the ignition on and try again. | The ignition went off, or the link dropped, in the middle of the read. |
+
+Some errors have no hint because the error text already says what to do. A
+terminal that cannot show the tick and the cross gets `ok` and `FAIL` instead.
+
+### Save a report
+
+```bash
+overrev read --report report.html
+```
+
+also writes a one-page HTML report: the date, the VIN, the DME, the table, the
+peak record and the stored fault codes. It is one file with no script and no
+link to another file, so it opens offline and prints. You can give it to a
+buyer or a mechanic. The VIN is in the report, so look at it before you post
+the file in public. Without `--report`, `read` does not ask the car for the VIN.
+
+### A car that is not tested
+
+The first line of the results names the DME and says `(tested)` or
+`(not tested)`. For a DME that is not the tested one, `overrev` also prints a
+`note:` line to say that the values may not mean what the labels say. The
+numbers are still shown. To help check them for your car, run
+
+```bash
+overrev probe
+```
+
+with the ignition on and the engine off (it takes `--mac` or `--elm` like
+`read`). It asks the engine computer for its part number, software, hardware
+numbers and variant, the raw answers for the counters and the peak record, and
+how many fault codes are stored. It prints them as a Markdown report. It never
+asks for the VIN or a serial number, so the report is safe to paste into a
+public issue: https://github.com/YannKr/porsche-overrev/issues/new?template=new-car.yml
+
+### JSON
+
+`overrev --json` prints one JSON object with `dme`, `ranges`, `peak` and
+`fault_codes`. The `dme` field says what was found and whether it is the
+tested one:
+
+```json
+"dme": {
+  "part_number": "99161869217",
+  "software": "3671",
+  "tested": true
+}
+```
+
+`part_number` and `software` are `null` when the engine computer refuses them
+or has nothing to give. `tested` is then `false`.
+
+### From a checkout
+
 From a checkout, two more read-only scripts (both find the adapter the same
 way, or take a serial port as the last argument):
 
@@ -153,14 +269,83 @@ python3 -m venv .venv && .venv/bin/pip install -e '.[test]'
 .venv/bin/python scripts/scan_dids.py 1B00 1BFF # every DID in the range that answers
 ```
 
-## Automatic mode (Raspberry Pi)
+## Automatic mode (Linux)
 
 `overrev auto` reads once per boot without user input. It retries every
-30 s until the adapter and the car answer. Then it reads the VIN and the
-twelve counters, appends one JSON record to `readings.jsonl`, and can post
-the result to a Discord webhook. The post shows the ignitions added since the
-previous read. If the VIN is not the one you set, the read still happens, but
-the post says **UNVERIFIED CAR**.
+30 s until the adapter and the car answer. Then it reads the VIN, the DME
+identity, the twelve counters, the peak record and the stored fault codes,
+appends one JSON record to `readings.jsonl`, and can post the result to a
+Discord webhook or an ntfy topic. The post shows the ignitions added since the
+previous read. If the VIN is not one you set with `--vin`, the read still
+happens, but the post says **OTHER CAR**. If the DME is not the tested one, the
+post says **UNTESTED DME**. Without `--vin`, no car counts as another. A post
+that fails is tried three times, and it never makes the service read the car
+again.
+
+It takes the adapter as `--mac <MAC>` (a direct Bluetooth connection) or
+`--elm <PORT>` (a serial port such as `/dev/rfcomm0`); one of the two is
+required. The other options are `--vin` (repeat it for more than one car),
+`--log-dir` (required), `--webhook-file` and `--retry`. `--webhook-file` names
+a file that holds a Discord webhook URL or an ntfy topic URL (for example
+`https://ntfy.sh/my-topic`). It must be an http or https URL. If it is not,
+the service stops with an error before it reads the car, and systemd does not
+restart it. If the file is missing or cannot be read, the service logs a
+warning and reads the car without posting.
+
+### One command: `overrev setup-auto`
+
+For any Linux machine with systemd and Bluetooth. **Not yet tested live**: it
+is covered by tests with fake adapters and a fake systemd, but it has not run
+on a real Raspberry Pi with the car. The system service below is the tested
+route.
+
+```bash
+overrev setup-auto
+curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh | sh -s -- --auto   # install overrev first, then the same
+```
+
+`setup-auto` needs the installed `overrev` from the one-line install, not
+`uvx`, because it writes the program's path into the service.
+
+Plug the OBDLink into the car and turn the ignition on (engine off). Then it:
+
+1. Finds the paired OBDLink, or pairs one (press **Connect** on the MX+ when
+   asked). `--mac <MAC>` picks a specific adapter.
+2. Reads the car once, with the same steps as `overrev read`, to check that it
+   works. It takes the VIN from the car.
+3. Asks on the terminal for a Discord webhook or an ntfy topic URL. It must
+   start with `https://`. Press Enter to post nothing, or, when one is saved
+   already, to keep it. `--webhook URL` answers the question in advance. The
+   URL is a secret: it is saved in `~/.config/overrev/webhook`, mode 600.
+4. Writes the systemd user service `~/.config/systemd/user/overrev-auto.service`
+   (with the VIN of this car, so another car is flagged), enables it and
+   starts it. The first automatic read starts at once.
+5. Turns on "linger", so the service runs at boot without a login. If that
+   needs more rights, it prints the command to run once:
+   `sudo loginctl enable-linger <user>`.
+
+Logs: `~/.local/state/overrev/readings.jsonl` and `overrev.log`, or
+`journalctl --user -u overrev-auto`. To read again without a reboot, run
+`systemctl --user restart overrev-auto`.
+
+Run `overrev setup-auto` again to change something: it rewrites the service
+and restarts it, and keeps the saved webhook unless you give a new one.
+To stop posting, delete `~/.config/overrev/webhook`; automatic reads continue
+without posting.
+`overrev setup-auto --remove` stops and removes the service. Your logs and
+settings stay. `get.sh --uninstall` also removes the service.
+
+`setup-auto` installs a service for your user. If the system-wide service from
+the next section is also installed, it warns you, because both would read the
+car at boot. Enable only one of the two (for example,
+`sudo systemctl disable --now overrev-auto` for the system-wide one).
+
+### By hand, as a system service (tested)
+
+This is the route that has run on a Raspberry Pi with the car. That live run
+used an earlier version of `overrev auto`, from before the DME identity line,
+the ntfy option and the **OTHER CAR** and **UNTESTED DME** lines. The `19 02`
+fault-code read is not yet verified live.
 
 1. Pair the MX+ once: run `overrev` with the car on, or `deploy/pair-obdlink.sh`.
 2. Create the configuration (it stays out of git, mode 600):
@@ -168,7 +353,7 @@ the post says **UNVERIFIED CAR**.
 ```bash
 mkdir -p ~/.config/overrev && chmod 700 ~/.config/overrev
 printf 'OVERREV_MAC=<adapter MAC>\nOVERREV_VIN=<your VIN>\n' > ~/.config/overrev/env
-echo '<Discord webhook URL>' > ~/.config/overrev/webhook
+echo '<Discord webhook URL or ntfy topic URL>' > ~/.config/overrev/webhook
 chmod 600 ~/.config/overrev/*
 ```
 
@@ -185,12 +370,31 @@ sudo systemctl enable overrev-auto
 To use it: power the Pi, plug in the MX+, turn the ignition on. To read again
 without a reboot, run `sudo systemctl restart overrev-auto`.
 
-Logs:
+Logs of this service:
 
 - `~/overrev/log/readings.jsonl`: one record per read.
 - `~/overrev/log/overrev.log`: everything, including each line to and from
   the adapter. It rotates at 1 MB and keeps 5 old files.
 - `journalctl -u overrev-auto`.
+
+## Browser page (desktop Chrome or Edge)
+
+https://yannkr.github.io/porsche-overrev/ reads the counters in the browser,
+with no install. Pair the OBDLink in your computer's Bluetooth settings (or
+plug in a USB one), plug it into the car, turn the ignition on (engine off),
+click **Connect** and choose the OBDLink in the list that the browser shows.
+You get the same steps, hints, table, peak record and fault codes as in the
+terminal.
+
+- It needs Web Serial: Chrome or Edge 117 or newer on a computer. Safari,
+  Firefox and phone browsers cannot reach the adapter.
+- It only reads, with the same request list as the command line. It never
+  asks for the VIN. The results stay in the browser: the page loads nothing
+  from other sites and sends nothing anywhere.
+- **Not yet tested with a real adapter.** The logic is tested against a fake
+  OBDLink.
+- The page is the `docs/` folder (`index.html`, `app.js`, `overrev.js`): no
+  build step and no libraries.
 
 ## Phone, no code (OBDLink app)
 
@@ -208,9 +412,10 @@ all twelve plus the two peak values, in the app's own export format: header
 The phone app is not limited to reads. Its clear-codes buttons are outside
 this tool's read-only guard.
 
-A web page could do the same read from desktop Chrome or Edge, which can
-reach a paired Bluetooth serial device through Web Serial. That is not built.
-iPhone browsers cannot reach the MX+.
+On a computer, the [browser page](#browser-page-desktop-chrome-or-edge) does
+the same read from desktop Chrome or Edge, which can reach a paired Bluetooth
+serial device through Web Serial. iPhone browsers cannot reach the MX+, so on
+a phone use the app.
 
 ## Known quirks (OBDLink MX+)
 
@@ -233,7 +438,12 @@ iPhone browsers cannot reach the MX+.
 
 ```bash
 .venv/bin/python -m pytest
+node --test tests/web/*.test.mjs     # the browser page; needs Node 18 or newer
 ```
+
+Give `node --test` the file names, as above: a bare directory fails on new
+Node versions. One of the browser tests also runs Python, to check that the
+page and the command line use the same texts.
 
 The suite checks the following:
 
@@ -245,10 +455,17 @@ The suite checks the following:
 - The OBDLink transport works against a fake adapter that follows the
   ELM327 text protocol. This covers echo, prompt, response-pending,
   multi-frame answers and lost commands.
-- The automatic mode handles retries, a foreign VIN, DME refusals and failed
-  Discord posts.
+- The automatic mode handles retries, another car, an untested DME, DME
+  refusals, and failed Discord or ntfy posts.
 - Bluetooth: finding a paired OBDLink, pairing when none is, the socket
   wrapper, and the messages when the adapter is unreachable.
+- The step lines, the hints (and the `ok`/`FAIL` fallback), the DME check, the
+  HTML report (car text is escaped), and `overrev probe` (no VIN in its output).
+- `setup-auto` (the service file, the webhook, running it twice, `--remove`)
+  and the installer script, with stand-ins for the programs they call.
+- The browser page: the same read-only list, the read against a fake OBDLink,
+  a cancelled port picker, an error in the middle of a read, and car text
+  that is shown as text and never as HTML.
 
 ## License
 

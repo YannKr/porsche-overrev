@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>overrev: DME over-rev reader</title>
+<style>
+:root { color-scheme: light dark; --bg: #fff; --fg: #1c1c1e; --muted: #5f5f66; --line: #d4d4d8;
+  --accent: #1d4ed8; --ok: #15803d; --fail: #b91c1c; --warn-bg: #fef3c7; --warn-line: #d97706; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #131316; --fg: #ececf0; --muted: #a1a1aa; --line: #3a3a42;
+    --accent: #93b4ff; --ok: #4ade80; --fail: #f87171; --warn-bg: #3a2a0a; --warn-line: #f59e0b; }
+}
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 40rem; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 1.6rem; margin: 0 0 8px; }
+h2 { font-size: 1.1rem; margin: 28px 0 8px; }
+p, li { margin: 4px 0; overflow-wrap: anywhere; }
+ul { padding-left: 20px; }
+a { color: var(--accent); }
+button { font: inherit; font-weight: 600; margin: 16px 0 4px; padding: 10px 24px; border: 0; border-radius: 8px;
+  background: var(--accent); color: var(--bg); cursor: pointer; }
+button:disabled { opacity: 0.5; cursor: wait; }
+#steps { list-style: none; padding: 0; margin: 12px 0; }
+#steps > li { margin: 6px 0; }
+#steps .ok { color: var(--ok); }
+#steps .fail { color: var(--fail); font-weight: 600; }
+#steps .error, #steps .hint { color: var(--fg); font-weight: normal; }
+.note, footer { color: var(--muted); font-size: 0.9rem; }
+.warning { background: var(--warn-bg); border-left: 4px solid var(--warn-line); padding: 8px 12px; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: right; }
+th { border-bottom-width: 2px; }
+code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+footer { margin-top: 32px; padding-top: 12px; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<main>
+<h1>DME over-rev reader</h1>
+<p>This page reads the over-rev counters of a Porsche engine computer (DME) through an OBDLink adapter. For each
+of six engine-speed ranges above the rev limit, it shows how many ignitions happened in that range and the engine's
+operating hours when that range was last reached. It also shows the highest engine speed on record and the stored
+fault codes.</p>
+<p>It only reads. It sends no command that changes anything in the car. Nothing is installed, and the results stay
+on this computer. It is tested only on a US 991.2 GT3 DME (part number 991.618.692.17, software 3671). For any other
+DME, it shows a note. This page itself has not yet been tried with a real adapter; the command-line
+version has.</p>
+
+<h2>Before you start</h2>
+<ul>
+<li>Pair the OBDLink in your computer's Bluetooth settings, or plug in a USB OBDLink.</li>
+<li>Plug the adapter into the car's diagnostic port.</li>
+<li>Turn the ignition on, with the engine off.</li>
+<li>Make sure that no phone is connected to the adapter.</li>
+</ul>
+
+<button id="connect" type="button">Connect</button>
+<p id="picker-note" class="note">Your browser then shows a list of ports. Choose the OBDLink.</p>
+<p id="message" role="status"></p>
+<ol id="steps" aria-live="polite"></ol>
+<section id="results" aria-live="polite" hidden></section>
+
+<footer>
+<p>overrev is open source. It works in Chrome or Edge on a computer. Source, command-line version and phone
+instructions: <a href="https://github.com/YannKr/porsche-overrev">github.com/YannKr/porsche-overrev</a></p>
+</footer>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
