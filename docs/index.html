@@ -74,6 +74,10 @@ button.copy { padding: 6px 12px; font-size: 0.9rem; background: transparent; col
 table { border-collapse: collapse; width: 100%; margin: 8px 0; font-variant-numeric: tabular-nums; }
 th, td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: right; }
 th { border-bottom-width: 2px; }
+.numbers { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); margin: 0; }
+.numbers > div { padding: 14px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); }
+.numbers dt { font-weight: 600; }
+.numbers dd { margin: 4px 0 0; color: var(--muted); }
 footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.9rem; }
 footer p { display: flex; gap: 8px; align-items: flex-start; }
 </style>
@@ -101,7 +105,7 @@ footer p { display: flex; gap: 8px; align-items: flex-start; }
   </div>
   <p class="lead">See how many ignitions your engine fired above the rev limit, and when. Made for the 991.2 GT3. It only reads.</p>
   <ul class="need" aria-label="You need">
-    <li><svg class="icon" aria-hidden="true"><use href="#i-plug"/></svg>An OBDLink adapter, such as the MX+</li>
+    <li><svg class="icon" aria-hidden="true"><use href="#i-plug"/></svg>An OBDLink adapter (tested with the MX+)</li>
     <li><svg class="icon" aria-hidden="true"><use href="#i-key"/></svg>Ignition on, engine off</li>
   </ul>
 </header>
@@ -114,7 +118,7 @@ footer p { display: flex; gap: 8px; align-items: flex-start; }
     <p class="sub">The OBDLink app. No code.</p>
     <ol>
       <li><a href="overrev-pids.udpid" download>Download the PID file</a> on the phone.</li>
-      <li>In the app: <b>Settings › User&#8209;Defined&nbsp;PIDs › ⋮&nbsp;›&nbsp;Import</b>. It replaces PIDs you added yourself.</li>
+      <li>In the app: <b>Settings › User&#8209;Defined&nbsp;PIDs › ⋮&nbsp;›&nbsp;Import</b>. It replaces PIDs you added yourself, so export those first.</li>
       <li>Open <b>PID Values</b>.</li>
     </ol>
     <p class="note">The file only reads. The app itself can also clear codes.</p>
@@ -163,6 +167,17 @@ footer p { display: flex; gap: 8px; align-items: flex-start; }
   <p id="message" role="status"></p>
   <ol id="steps" aria-live="polite"></ol>
   <section id="results" aria-live="polite" hidden></section>
+</section>
+
+<section id="numbers">
+  <h2><svg class="icon" aria-hidden="true"><use href="#i-gauge"/></svg> What the numbers mean</h2>
+  <dl class="numbers">
+    <div><dt>Ranges 1 to 6</dt><dd>All six are above the rev limit. Range 1 is the lowest engine speed, range 6 the highest.</dd></div>
+    <div><dt>Ignitions</dt><dd>Each cylinder firing counts once. At 9,000 rpm the engine fires 450 times a second, so 450 ignitions add up to about one second.</dd></div>
+    <div><dt>Op. h at last event</dt><dd>The engine's operating hours when that range was last reached. It is not a duration. Ranges with the same hours were most likely reached in one event. overrev cannot read the current total hours yet, so it cannot say how long ago that was.</dd></div>
+    <div><dt>Peak engine speed</dt><dd>The highest rpm the engine computer has on record. It can be well above the rev limit, for example after a missed downshift.</dd></div>
+    <div><dt>Time above the over-speed limit</dt><dd>In seconds: all the time the engine has spent above the engine computer's over-speed limit, added up.</dd></div>
+  </dl>
 </section>
 
 <footer>

@@ -10,7 +10,8 @@
 The engine computer (DME) counts every ignition above the rev limit, in six
 ranges. overrev reads those counters through an OBDLink adapter, with the
 engine hours when each range was last reached, the highest rpm on record and
-the stored fault codes.
+the stored fault codes. The over-rev numbers are the ones PIWIS shows,
+without a dealer visit.
 
 <p align="center"><img src="docs/img/output.svg" width="720" alt="overrev output: three ticked steps, the DME, then the six over-rev ranges with ignitions and operating hours"></p>
 
@@ -24,14 +25,16 @@ the stored fault codes.
 
 ## Pick a way
 
-macOS, Windows and SocketCAN interfaces: see [Platforms](#platforms).
+You need an OBDLink adapter (tested with the MX+), with the ignition on and
+the engine off. macOS, Windows and SocketCAN interfaces: see
+[Platforms](#platforms).
 
 ### <img src="docs/img/phone.svg" width="22" height="22" alt=""> On your phone, no code
 
 ![read tested on an iPhone](https://img.shields.io/badge/-read%20tested%20on%20an%20iPhone-2ea44f)
 
 1. On the phone, download [overrev-pids.udpid](https://yannkr.github.io/porsche-overrev/overrev-pids.udpid).
-2. In the OBDLink app: **Settings › User-Defined PIDs › ⋮ › Import**. This replaces PIDs you added yourself.
+2. In the OBDLink app: **Settings › User-Defined PIDs › ⋮ › Import**. This replaces PIDs you added yourself, so export those first.
 3. Connect to the car and open **PID Values**.
 
 [More](#phone-no-code-obdlink-app)
@@ -64,6 +67,19 @@ curl -fsSL https://raw.githubusercontent.com/YannKr/porsche-overrev/main/get.sh 
 
 A Raspberry Pi in the car reads once per boot and posts the result to Discord
 or ntfy. [More](#automatic-mode-linux)
+
+## What the numbers mean
+
+| You see | It means |
+|---|---|
+| Ranges 1 to 6 | All six are above the rev limit. Range 1 is the lowest engine speed, range 6 the highest. |
+| Ignitions | Each cylinder firing counts once. At 9,000 rpm the engine fires 450 times a second, so 450 ignitions add up to about one second. |
+| Op. h at last event | The engine's operating hours when that range was last reached. It is not a duration. Ranges with the same hours were most likely reached in one event. overrev cannot read the current total hours yet, so it cannot say how long ago that was. |
+| Peak engine speed | The highest rpm the engine computer has on record. It can be well above the rev limit, for example after a missed downshift. |
+| Time above the over-speed limit | In seconds: all the time the engine has spent above the engine computer's over-speed limit, added up. |
+
+In the OBDLink app, the same values are called **Over-rev 1 ignitions**,
+**Over-rev 1 last event (op h)** and so on.
 
 ## What it reads
 
@@ -463,7 +479,8 @@ all twelve plus the two peak values, in the app's own export format: header
 
 1. Get the file onto the phone (iCloud Drive, Files, mail).
 2. In the app, go to **Settings → User-Defined PIDs → ⋮ → Import**. On the
-   test iPhone, the import **replaced** the existing user-defined PIDs.
+   test iPhone, the import **replaced** the existing user-defined PIDs, so
+   export yours first if you want to keep them.
 3. Connect to the car and open **PID Values** to see all fourteen.
 
 The phone app is not limited to reads. Its clear-codes buttons are outside

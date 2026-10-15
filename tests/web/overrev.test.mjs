@@ -668,6 +668,13 @@ test("the landing page's install lines are the one-liner get.sh documents, plain
   assert.deepEqual(commands, [oneLine, `${oneLine} -s -- --auto`]);
 });
 
+test("the landing page explains each result label, outside the browser reader so phone visitors see it", () => {
+  const html = readFileSync(`${ROOT}docs/index.html`, "utf8");
+  assert.match(html, /<section id="results"[^>]*><\/section>\s*<\/section>\s*<section id="numbers">/);
+  const terms = [...html.matchAll(/<dt>([^<]*)<\/dt>/g)].map(m => m[1]);
+  assert.deepEqual(terms, ["Ranges 1 to 6", "Ignitions", "Op. h at last event", "Peak engine speed", "Time above the over-speed limit"]);
+});
+
 function copyPage(clipboard) {
   const label = { textContent: "Copy" };
   const code = { textContent: "curl x | sh" };
