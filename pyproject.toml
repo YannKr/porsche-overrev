@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest>=9.1.1"]
+test = ["pytest>=9.2.0"]
 
 [project.scripts]
 overrev = "overrev.cli:main"
